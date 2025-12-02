@@ -23,7 +23,7 @@ export const FORTUNES: Fortune[] = [
   { title: '白马签・《谣曲》', sign: '“白马白马别停泊，奔赴宇宙的脉搏。”', interpretation: '那个让你感到钝痛的现实，其实也是宇宙的脉搏。去感受它。' },
   { title: '觉醒签・《未醒》', sign: '“只要我还没有醒，就不算可惜。”', interpretation: '允许自己装睡一会儿。' },
   { title: '人间签・《庸俗》', sign: '“太幸福的人生是不是只有你知道？”', interpretation: '幸福是私有的，不需要公证。' },
-  { title: '时光签・《广州塔》', sign: '“散漫地携手，欢度乏味庸俗的未来。”', interpretation: '接受乏味，接受庸俗。只要有人（或者有猫，或者有那个内在的自己）携手，未来就不可怕。（嗯...这是kevinz老师的一首歌，我很喜欢。）' },
+  { title: '时光签・《广州塔》', sign: '“散漫地携手，欢度乏味庸俗的未来。(by kevinz)”', interpretation: '接受乏味，接受庸俗。只要有人（或者有猫，或者有那个内在的自己）携手，未来就不可怕。（嗯...这是kevinz老师的一首歌，我很喜欢。）' },
   { title: '真实签・日记', sign: '“爱就是好也爱，不好也爱。”', interpretation: '那个猜忌的你、那个暴食的你、那个要强的你，都过来，抱一下。' },
   { title: '宏定义签', sign: '#define HAPPINESS (now)', interpretation: '别把幸福定义在未来。就在这一刻，宏定义生效。' },
   { title: '松弛签・苏轼', sign: '“也无风雨也无晴。”', interpretation: '日子就是日子，平平淡淡才是真。今天不开心？没事，只是天气不好。' },
