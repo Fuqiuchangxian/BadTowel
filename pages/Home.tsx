@@ -21,7 +21,7 @@ const Home: React.FC = () => {
         </p>
         <div className="mt-6 flex justify-center gap-12 font-old text-sm text-ink/70 border-t border-b border-lapis py-2 w-full max-w-2xl mx-auto">
            <span>BEIJING, CUC</span>
-           <span>EST. 2024</span>
+           <span>EST. 2025</span>
            <span>PRICE: FREE</span>
         </div>
       </header>
