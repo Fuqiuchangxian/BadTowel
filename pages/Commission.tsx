@@ -27,7 +27,7 @@ const Commission: React.FC = () => {
                你好，这个页面展示我的大致委托价位。
              </p>
              <p>
-               以下价位主要适用于<span className="font-bold text-lapis">唱歌假人（Vocaloid/SynthV等）</span>相关项目。如果是真人（含VTuber）项目，费用会根据具体情况向上浮动。
+               以下价位主要适用于<span className="font-bold text-lapis">唱歌假人（Vocaloid/SynthV等）</span>相关项目。如果是真人（含VTuber）项目，费用会根据具体情况向上浮动。嗯嗯嗯大家都是搞术的所以我将长期保持这个很白菜的稿价。
              </p>
              <p>
                当然，如果你是我列表or关注的老师，随时欢迎来合作。
