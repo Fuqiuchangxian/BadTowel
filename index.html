@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bad Towel OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Noto+Serif+SC:wght@300;400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              greek: ['"Cinzel"', 'serif'],
+              serif: ['"Noto Serif SC"', '"Playfair Display"', 'serif'],
+              old: ['"IM Fell English"', 'serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+            },
+            colors: {
+              'lapis': '#1e3a8a', // Deep Blue
+              'lapis-dark': '#172554',
+              'verdigris': '#059669', // Oxidized Green
+              'parchment': '#F4F1EA', // Warm Paper
+              'ink': '#1c1917', // Soft Black
+              'terracotta': '#c2410c', // Pottery Orange
+              'bronze': '#b45309',
+              'os-bg': '#e5e7eb',
+            },
+            backgroundImage: {
+              'paper-pattern': "url('https://www.transparenttextures.com/patterns/cream-paper.png')",
+              'grid-pattern': "linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)",
+              'airmail': "repeating-linear-gradient(45deg, #ef4444 0, #ef4444 10px, #f4f1ea 10px, #f4f1ea 20px, #1e3a8a 20px, #1e3a8a 30px, #f4f1ea 30px, #f4f1ea 40px)",
+            },
+            animation: {
+              'shake-vigorous': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite',
+              'stamp': 'stamp 0.2s ease-out forwards',
+              'pop-in': 'popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards',
+              'pop-out': 'popOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards',
+              'gradient-xy': 'gradient-xy 15s ease infinite',
+              'page-enter': 'page-enter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+            },
+            keyframes: {
+              shake: {
+                '0%, 100%': { transform: 'rotate(0deg)' },
+                '25%': { transform: 'rotate(5deg)' },
+                '75%': { transform: 'rotate(-5deg)' }
+              },
+              stamp: {
+                '0%': { transform: 'scale(1.5)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' }
+              },
+              popIn: {
+                '0%': { transform: 'scale(0.9)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' }
+              },
+              popOut: {
+                '0%': { transform: 'scale(1)', opacity: '1' },
+                '100%': { transform: 'scale(0.9)', opacity: '0' }
+              },
+              'gradient-xy': {
+                '0%, 100%': {
+                  'background-size': '400% 400%',
+                  'background-position': '0% 50%'
+                },
+                '50%': {
+                  'background-size': '200% 200%',
+                  'background-position': '100% 50%'
+                }
+              },
+              'page-enter': {
+                '0%': { opacity: '0', transform: 'translateY(15px)', filter: 'blur(5px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f4f1ea;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+      
+      .drop-cap {
+        float: left;
+        font-family: 'Cinzel', serif;
+        font-size: 4.5rem;
+        line-height: 0.8;
+        padding-right: 0.5rem;
+        padding-top: 0.5rem;
+        color: #1e3a8a;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
