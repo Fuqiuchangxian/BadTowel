@@ -37,7 +37,7 @@ export const Navigation: React.FC<NavigationProps> = ({ isMobile = false }) => {
   if (isMobile) {
     return (
       <div className="p-4 border-b border-lapis/20 flex justify-between items-center bg-[#f4f4f5]">
-        <span className="font-greek font-bold text-lapis">BAD TOWEL</span>
+        <Link to="/" className="font-greek font-bold text-lapis hover:text-terracotta transition-colors">BAD TOWEL</Link>
         <button onClick={() => setIsOpen(!isOpen)} className="text-lapis">
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -67,8 +67,10 @@ export const Navigation: React.FC<NavigationProps> = ({ isMobile = false }) => {
       
       {/* Sidebar Header */}
       <div className="px-6 mb-8">
-         <h1 className="font-greek font-bold text-xl text-lapis tracking-tight">BAD TOWEL</h1>
-         <p className="text-[10px] font-mono text-gray-400 mt-1">hellllllo！</p>
+         <Link to="/" className="block group">
+           <h1 className="font-greek font-bold text-xl text-lapis tracking-tight group-hover:text-terracotta transition-colors">BAD TOWEL</h1>
+           <p className="text-[10px] font-mono text-gray-400 mt-1 group-hover:text-gray-600 transition-colors">hellllllo！</p>
+         </Link>
       </div>
 
       {/* Navigation List */}
