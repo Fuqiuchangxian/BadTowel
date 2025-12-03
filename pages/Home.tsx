@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowUpRight, BookOpen, Database } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowUpRight, BookOpen, Database, Disc, Sparkles, User, Coins, ChevronRight } from 'lucide-react';
 import { EXTERNAL_LINKS, BOOK_RECOMMENDATIONS } from '../constants';
 
 const Home: React.FC = () => {
@@ -47,9 +48,76 @@ const Home: React.FC = () => {
               兴趣爱好有很多虽然都不怎么精但总会在莫名其妙的地方用到一些，怎么不算一种精呢？
               好吧其实下一步的目标就是找到很喜欢的一个方向精进一下。
             </p>
-            <p className="font-bold text-lapis border-l-2 border-verdigris pl-4 italic my-4">
-               虽然专业性谈不上很好但是总之在前进的路上了就不算差对吧！
-            </p>
+          </div>
+
+          {/* Quick Navigation Cards */}
+          <div className="mb-12">
+            <h3 className="font-greek text-2xl text-lapis mb-6 flex items-center">
+               <span className="mr-2 text-xl">✦</span> EXPLORE THE CHRONICLE
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <Link to="/music" className="block group">
+                <div className="h-full border border-lapis/20 bg-white p-5 rounded-lg hover:shadow-md transition-all hover:border-lapis/50 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Disc size={64} />
+                  </div>
+                  <p className="font-serif text-ink text-sm mb-3">如果你想了解一些我的歌（虽然大概率不想）</p>
+                  <span className="inline-flex items-center text-xs font-bold font-mono text-lapis group-hover:text-terracotta uppercase tracking-wider">
+                    [跳转到我的歌] <ChevronRight size={14} className="ml-1" />
+                  </span>
+                </div>
+              </Link>
+
+              <Link to="/portfolio" className="block group">
+                <div className="h-full border border-lapis/20 bg-white p-5 rounded-lg hover:shadow-md transition-all hover:border-lapis/50 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Database size={64} />
+                  </div>
+                  <p className="font-serif text-ink text-sm mb-3">如果你有点想了解数据科学相关</p>
+                  <span className="inline-flex items-center text-xs font-bold font-mono text-lapis group-hover:text-terracotta uppercase tracking-wider">
+                    [跳转到知识库] <ChevronRight size={14} className="ml-1" />
+                  </span>
+                </div>
+              </Link>
+
+              <Link to="/fortune" className="block group">
+                <div className="h-full border border-lapis/20 bg-white p-5 rounded-lg hover:shadow-md transition-all hover:border-lapis/50 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Sparkles size={64} />
+                  </div>
+                  <p className="font-serif text-ink text-sm mb-3">如果想抽一签</p>
+                  <span className="inline-flex items-center text-xs font-bold font-mono text-lapis group-hover:text-terracotta uppercase tracking-wider">
+                    [跳转到抽一签] <ChevronRight size={14} className="ml-1" />
+                  </span>
+                </div>
+              </Link>
+
+              <Link to="/commission" className="block group">
+                <div className="h-full border border-lapis/20 bg-white p-5 rounded-lg hover:shadow-md transition-all hover:border-lapis/50 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Coins size={64} />
+                  </div>
+                  <p className="font-serif text-ink text-sm mb-3">如果你要约我的委托，</p>
+                  <span className="inline-flex items-center text-xs font-bold font-mono text-lapis group-hover:text-terracotta uppercase tracking-wider">
+                    [跳转到委托] <ChevronRight size={14} className="ml-1" />
+                  </span>
+                </div>
+              </Link>
+
+              <Link to="/about" className="block group md:col-span-2">
+                <div className="h-full border border-lapis/20 bg-white p-5 rounded-lg hover:shadow-md transition-all hover:border-lapis/50 relative overflow-hidden flex items-center justify-between">
+                  <div className="relative z-10">
+                     <p className="font-serif text-ink text-sm mb-1">如果你想更深入了解我：</p>
+                     <span className="inline-flex items-center text-xs font-bold font-mono text-lapis group-hover:text-terracotta uppercase tracking-wider">
+                       [跳转到关于我] <ChevronRight size={14} className="ml-1" />
+                     </span>
+                  </div>
+                  <User size={48} className="text-lapis/10 group-hover:text-lapis/20 transition-colors" />
+                </div>
+              </Link>
+
+            </div>
           </div>
 
           {/* Special Feature: Feishu Knowledge Base */}
@@ -73,6 +141,9 @@ const Home: React.FC = () => {
                    <p>
                      如果你想入门数据科学或者说想了解一下，可以点击这个入口。因为我觉得笔记就是要让人看懂的而不是教材ultra版所以完全是拿自己当傻子讲给自己听的。
                    </p>
+                              <p className="font-bold text-lapis border-l-2 border-verdigris pl-4 italic my-4">
+               虽然专业性谈不上很好但是总之在前进的路上了就不算差对吧！
+            </p>
                 </div>
 
                 <a 
