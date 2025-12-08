@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { NAV_LINKS } from '../constants';
-import { Menu, X, Folder, Disc, FileText, Sparkles, User, Home, Coins } from 'lucide-react';
+import { Menu, X, Folder, Disc, FileText, Sparkles, User, Home, Coins, ListTodo } from 'lucide-react';
 
 interface NavigationProps {
   isMobile?: boolean;
@@ -16,6 +16,7 @@ export const Navigation: React.FC<NavigationProps> = ({ isMobile = false }) => {
       case '/': return <Home size={16} />;
       case '/music': return <Disc size={16} />;
       case '/portfolio': return <Folder size={16} />;
+      case '/todo': return <ListTodo size={16} />;
       case '/fortune': return <Sparkles size={16} />;
       case '/commission': return <Coins size={16} />;
       case '/about': return <User size={16} />;
