@@ -4,6 +4,7 @@ export const NAV_LINKS = [
   { name: '首页', path: '/', en: 'Home' },
   { name: '我的歌', path: '/music', en: 'Music' },
   { name: '知识库', path: '/portfolio', en: 'Portfolio' },
+  { name: '备忘录', path: '/todo', en: 'Agenda' },
   { name: '抽一签', path: '/fortune', en: 'Fortune' },
   { name: '委托', path: '/commission', en: 'Commission' },
   { name: '关于我', path: '/about', en: 'About' },
