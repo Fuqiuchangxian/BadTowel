@@ -14,6 +14,7 @@ import Portfolio from './pages/Portfolio';
 import FortunePage from './pages/Fortune';
 import About from './pages/About';
 import Commission from './pages/Commission';
+import Todo from './pages/Todo';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -34,6 +35,7 @@ const AnimatedContent = () => {
         <Route path="/" element={<Home />} />
         <Route path="/music" element={<Music />} />
         <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/todo" element={<Todo />} />
         <Route path="/fortune" element={<FortunePage />} />
         <Route path="/commission" element={<Commission />} />
         <Route path="/about" element={<About />} />
