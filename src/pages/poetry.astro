@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { siteConfig } from '../config';
+const poems=(await getCollection('poems')).sort((a,b)=>new Date(b.data.date).getTime()-new Date(a.data.date).getTime());
+const collections=[...new Set(poems.map(p=>p.data.collection).filter(Boolean))];
+const LOCK=`<span class="lock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>`;
+const STAR=`<span class="star-icon"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></span>`;
+---
+<BaseLayout title="诗歌">
+  <div class="flex" style="position:fixed;top:56px;left:0;right:0;bottom:0;">
+    <div class="side-panel">
+      <div class="filter-bar" id="filter-bar"><button class="filter-tag active" data-filter="">全部</button>{collections.map(c=><button class="filter-tag" data-filter={c}>{c}</button>)}</div>
+      <div class="flex-1 overflow-y-auto" id="poem-list">
+        {poems.map((poem,idx)=>(
+          <div class="list-item" data-id={poem.slug} data-collection={poem.data.collection} data-idx={idx}>
+            <div class="list-item-title"><span>{poem.data.title}</span>{poem.data.starred&&<Fragment set:html={STAR}/>}{!poem.data.public&&<Fragment set:html={LOCK}/>}</div>
+            <div class="flex items-center gap-2"><span class="list-item-date">{poem.data.date}</span>{poem.data.collection&&<span class="tag-accent">{poem.data.collection}</span>}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="reader-area" id="poem-reader"><div class="reader-empty"><img src={siteConfig.placeholderImage} alt="" onerror="this.style.display='none'"/></div></div>
+  </div>
+  <script define:vars={{poemsData:poems.map((p,i)=>({slug:p.slug,title:p.data.title,date:p.data.date,collection:p.data.collection,backstory:p.data.backstory,body:p.body,idx:i,isPublic:p.data.public!==false,lockReason:p.data.lockReason||'',starred:!!p.data.starred}))}}>
+    const list=document.getElementById('poem-list'),reader=document.getElementById('poem-reader'),filterBar=document.getElementById('filter-bar'),md=window.__BT_MD;
+    function isAdmin(){return !!(window).__BT_ADMIN}
+    const lockSvg=`<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+    function lockScreen(r){return `<div class="reader-card animate-fade-in-up" style="text-align:center;padding:80px 56px;"><div style="margin:0 auto 20px;opacity:.2;width:56px;">${lockSvg}</div><h2 style="font-size:1.2rem;font-weight:600;color:var(--gray-700);margin-bottom:12px;font-family:'Noto Sans SC',sans-serif;">当前内容未公开</h2><p style="font-size:.875rem;color:var(--gray-400);font-family:'Noto Sans SC',sans-serif;line-height:1.8;max-width:360px;margin:0 auto;white-space:pre-line;">${r||'作者暂未公开此内容'}</p></div>`}
+    const starHint=`<div class="starred-hint"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><span>这是作者偏爱的作品之一</span></div>`;
+    const adminBadge=t=>!t?`<span style="font-size:.6875rem;font-family:'Noto Sans SC',sans-serif;padding:1px 8px;border-radius:4px;color:#f59e0b;background:rgba(245,158,11,.1);margin-left:8px;vertical-align:middle;">未公开</span>`:'';
+
+    filterBar.addEventListener('click',e=>{const btn=e.target.closest('.filter-tag');if(!btn)return;const f=btn.dataset.filter;filterBar.querySelectorAll('.filter-tag').forEach(b=>b.classList.remove('active'));btn.classList.add('active');list.querySelectorAll('.list-item').forEach(item=>{item.style.display=!f||(item.dataset.collection||'')===f?'':'none'})});
+    list.addEventListener('click',e=>{const item=e.target.closest('.list-item');if(!item)return;const poem=poemsData.find(p=>p.slug===item.dataset.id);if(!poem)return;list.querySelectorAll('.list-item').forEach(i=>i.classList.remove('active'));item.classList.add('active');if(!poem.isPublic&&!isAdmin()){reader.innerHTML=lockScreen(poem.lockReason);return}renderPoem(poem)});
+
+    function renderPoem(poem){
+      const idx=poem.idx,prev=idx<poemsData.length-1?poemsData[idx+1]:null,next=idx>0?poemsData[idx-1]:null;
+      let html=`<div class="reader-card animate-fade-in-up"><h1 class="reader-title">${poem.title}${adminBadge(poem.isPublic)}</h1>${poem.starred?starHint:''}<div class="reader-meta"><span class="list-item-date">${poem.date}</span>${poem.collection?`<span class="tag-accent" style="padding:2px 12px;border-radius:6px;font-size:.75rem;">${poem.collection}</span>`:''}</div><div class="poem-body">${md.inlineFormat(poem.body)}</div>`;
+      if(poem.backstory)html+=`<button class="backstory-btn" id="bk-btn">— 创作背记</button>`;
+      html+=`<div class="prev-next">`;
+      if(prev)html+=`<div class="prev-next-btn" data-slug="${prev.slug}"><div style="font-size:.7rem;color:var(--gray-400);font-family:'Noto Sans SC',sans-serif;margin-bottom:4px;">← 上一首</div><div style="font-size:.875rem;color:var(--gray-700);">${prev.title}</div></div>`;else html+=`<div></div>`;
+      if(next)html+=`<div class="prev-next-btn" data-slug="${next.slug}" style="text-align:right;"><div style="font-size:.7rem;color:var(--gray-400);font-family:'Noto Sans SC',sans-serif;margin-bottom:4px;">下一首 →</div><div style="font-size:.875rem;color:var(--gray-700);">${next.title}</div></div>`;
+      html+=`</div></div>`;reader.innerHTML=html;
+      document.getElementById('bk-btn')?.addEventListener('click',()=>showModal('创作背记',poem.backstory));
+      reader.querySelectorAll('.prev-next-btn').forEach(b=>{b.addEventListener('click',()=>{const p=poemsData.find(x=>x.slug===b.dataset.slug);if(p){list.querySelectorAll('.list-item').forEach(i=>i.classList.remove('active'));list.querySelector(`[data-id="${p.slug}"]`)?.classList.add('active');if(!p.isPublic&&!isAdmin())reader.innerHTML=lockScreen(p.lockReason);else renderPoem(p);reader.scrollTop=0}})});
+    }
+    function showModal(title,content){const ov=document.createElement('div');ov.className='modal-overlay';const m=document.createElement('div');m.className='modal-panel';m.style.cssText=`left:${window.innerWidth/2-200}px;top:${window.innerHeight/2-150}px;width:420px;max-width:90vw;max-height:70vh;`;m.innerHTML=`<div class="modal-handle" id="mh"><div style="display:flex;align-items:center;gap:8px;"><svg width="12" height="12" viewBox="0 0 12 12" fill="#a3a3a3"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="6" r="1.5"/><circle cx="9" cy="6" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/></svg><span style="font-size:.875rem;font-weight:600;color:var(--gray-800);font-family:'Noto Sans SC',sans-serif;">${title}</span></div><button class="modal-close" id="mc">×</button></div><div class="modal-body" style="max-height:calc(70vh - 50px);white-space:pre-line;">${content}</div>`;document.body.appendChild(ov);document.body.appendChild(m);let d=false,ox=0,oy=0;m.querySelector('#mh').addEventListener('mousedown',e=>{d=true;ox=e.clientX-m.getBoundingClientRect().left;oy=e.clientY-m.getBoundingClientRect().top});document.addEventListener('mousemove',e=>{if(!d)return;m.style.left=(e.clientX-ox)+'px';m.style.top=(e.clientY-oy)+'px'});document.addEventListener('mouseup',()=>{d=false});const close=()=>{ov.remove();m.remove()};ov.addEventListener('click',close);m.querySelector('#mc').addEventListener('click',close)}
+  </script>
+</BaseLayout>

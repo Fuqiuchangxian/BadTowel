@@ -1,0 +1,25 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import { siteConfig } from '../config';
+interface Props { title?: string; transparentNav?: boolean; isHome?: boolean; }
+const { title = 'BadTowel', transparentNav = false, isHome = false } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — {siteConfig.name}</title>
+  <link rel="icon" type="image/svg+xml" href={siteConfig.logoImage} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script is:inline src="/scripts/markdown.js"></script>
+</head>
+<body>
+  <Navbar transparent={transparentNav} currentPath={currentPath} />
+  {!isHome && <div class="page-bg" style={`background-image: url('${siteConfig.heroImage}');`}></div>}
+  <slot />
+  {!isHome && <footer class="site-footer">© 2026 BadTowel</footer>}
+</body>
+</html>

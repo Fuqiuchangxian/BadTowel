@@ -1,0 +1,112 @@
+backend:
+  name: github
+  repo: Fuqiuchangxian/BadTowel
+  branch: main
+
+media_folder: "public/images"
+public_folder: "/images"
+
+collections:
+  - name: "poems"
+    label: "诗歌"
+    folder: "src/content/poems"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "所属诗�?, name: "collection", widget: "string", required: false, default: "" }
+      - { label: "创作背记", name: "backstory", widget: "text", required: false, default: "" }
+      - { label: "是否公开", name: "public", widget: "boolean", default: true, required: false }
+      - { label: "未公开原因", name: "lockReason", widget: "text", required: false, default: "" }
+      - { label: "星标推荐", name: "starred", widget: "boolean", default: false, required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+  - name: "songs"
+    label: "音乐"
+    folder: "src/content/songs"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { label: "歌曲标题", name: "title", widget: "string" }
+      - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "所属专�?, name: "album", widget: "string", required: false, default: "" }
+      - label: "平台链接"
+        name: "platforms"
+        widget: "list"
+        required: false
+        fields:
+          - { label: "平台�?, name: "name", widget: "string" }
+          - { label: "链接", name: "url", widget: "string" }
+      - { label: "曲绘图片", name: "artImage", widget: "image", required: false, default: "" }
+      - { label: "创作手记", name: "notes", widget: "text", required: false, default: "" }
+      - { label: "是否公开", name: "public", widget: "boolean", default: true, required: false }
+      - { label: "未公开原因", name: "lockReason", widget: "text", required: false, default: "" }
+      - { label: "星标推荐", name: "starred", widget: "boolean", default: false, required: false }
+      - { label: "歌词", name: "body", widget: "markdown" }
+
+  - name: "blogs"
+    label: "博客"
+    folder: "src/content/blogs"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - label: "行内关联"
+        name: "links"
+        widget: "list"
+        required: false
+        fields:
+          - { label: "关联文字", name: "text", widget: "string" }
+          - { label: "类型", name: "type", widget: "select", options: ["poem", "song", "blog", "note"] }
+          - { label: "目标 ID（文件名�?, name: "targetId", widget: "string" }
+      - { label: "是否公开", name: "public", widget: "boolean", default: true, required: false }
+      - { label: "未公开原因", name: "lockReason", widget: "text", required: false, default: "" }
+      - { label: "星标推荐", name: "starred", widget: "boolean", default: false, required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+  - name: "notes"
+    label: "笔记"
+    folder: "src/content/notes"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "分类标签", name: "categories", widget: "list", required: false }
+      - { label: "是否公开", name: "public", widget: "boolean", default: true, required: false }
+      - { label: "未公开原因", name: "lockReason", widget: "text", required: false, default: "" }
+      - { label: "星标推荐", name: "starred", widget: "boolean", default: false, required: false }
+      - { label: "正文", name: "body", widget: "markdown" }
+
+  - name: "settings"
+    label: "站点设置"
+    files:
+      - label: "首页设置"
+        name: "home"
+        file: "src/data/home.json"
+        fields:
+          - label: "轮播句子"
+            name: "sentences"
+            widget: "list"
+            field: { label: "句子", name: "sentence", widget: "string" }
+          - { label: "首页大图", name: "heroImage", widget: "image" }
+      - label: "关于�?
+        name: "about"
+        file: "src/data/about.json"
+        fields:
+          - { label: "致辞", name: "greeting", widget: "string" }
+          - { label: "信件正文", name: "body", widget: "markdown" }
+          - { label: "署名", name: "signature", widget: "string" }
+          - { label: "日期�?, name: "dateLine", widget: "string" }
+          - label: "社交链接"
+            name: "socialLinks"
+            widget: "list"
+            fields:
+              - { label: "平台�?, name: "name", widget: "string" }
+              - { label: "链接", name: "url", widget: "string" }
