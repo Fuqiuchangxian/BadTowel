@@ -1,0 +1,126 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config';
+
+const tracks = [
+  { num: '01', name: '归处', pinyin: 'GUI CHU', lines: ['你站在哪里 远方就在哪里', '......', '天空占一半 一半是阑珊', '轻舟已过万重山'] },
+  { num: '02', name: '滂沱', pinyin: 'PANG TUO', lines: ['万万年年里的朝夕', '化作一场大雨', '回忆淋漓'] },
+  { num: '03', name: '白马', pinyin: 'BAI MA', lines: ['我们盛放的意 义涌向大地', '我们向往的旷野揉碎成你', '我们倾记的爱意川流不息', '我们汹涌的躯体化作春泥'] },
+  { num: '04', name: '空愁', pinyin: 'KONG CHOU', lines: ['点解我嘅会行到呢一步', '其实我嘅永远都唔会知道', "Maybe it's time to let it go", '是但啦'] },
+  { num: '05', name: '如果', pinyin: 'RU GUO', lines: ['我释怀怎样的释怀', '又等待哪一种等待', '问春风她不理睬', '白马过河就是月阕', '黑马过河就是月残', '故事的终章 讲给谁听呢'] },
+  { num: '06', name: '未醒', pinyin: 'WEI XING', lines: ['拥抱千万个的你', '呢语终究是一隅', '白马奔驰的草地', '终究只能藏在梦里', '曾经的荡漾春意', '我将他埋在风里', '从这里到三万里 就不再孤寂'] },
+  { num: '07', name: '恣意', pinyin: 'ZI YI', lines: ['那些恣意的感动', '悄悄生长', '我爱你。'] },
+];
+---
+
+<BaseLayout title="将晓" transparentNav={true} isHome={false}>
+  <div style="background:#0a0e14;color:#e8e6e3;min-height:100vh;">
+
+    <!-- ═══ Hero ═══ -->
+    <section style="position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <img src={siteConfig.heroImage} alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.18;filter:grayscale(.4) contrast(1.1);" onerror="this.remove()" />
+
+      <div style="position:relative;z-index:1;width:100%;max-width:960px;padding:0 48px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <!-- 左侧主标题 -->
+          <div>
+            <p style="font-size:.75rem;color:rgba(255,255,255,.4);font-family:'Noto Sans SC',sans-serif;letter-spacing:3px;margin-bottom:40px;">原创专辑</p>
+
+            <div style="position:relative;display:inline-block;margin-bottom:16px;">
+              <span style="font-family:'Noto Serif SC',serif;font-size:7rem;font-weight:900;line-height:1;letter-spacing:.15em;color:#fff;text-shadow:0 0 60px rgba(255,255,255,.08);">将晓</span>
+              <svg width="120" height="120" viewBox="0 0 120 120" style="position:absolute;top:-20px;right:-30px;opacity:.35;" fill="none" stroke="#fff" stroke-width="1">
+                <circle cx="60" cy="60" r="55" stroke-dasharray="4 6" />
+                <circle cx="60" cy="60" r="45" stroke-dasharray="2 8" opacity=".5" />
+                <path d="M85 35 L95 25 M90 42 L102 36" stroke-width="1.5" opacity=".6"/>
+              </svg>
+            </div>
+
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.8rem;letter-spacing:.5em;color:rgba(255,255,255,.35);margin-bottom:32px;">&mdash;&nbsp; J I A N G &nbsp; X I A O &nbsp;&mdash;</p>
+
+            <p style="font-family:'Noto Serif SC',serif;font-size:1.05rem;color:rgba(255,255,255,.55);letter-spacing:2px;">长夜将尽，天光未明。</p>
+          </div>
+
+          <!-- 右侧信息卡 -->
+          <div style="text-align:right;padding-top:8px;">
+            <p style="font-family:'Noto Serif SC',serif;font-size:2.8rem;font-weight:300;color:rgba(255,255,255,.7);line-height:1;letter-spacing:2px;">2026</p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.65rem;letter-spacing:4px;color:rgba(255,255,255,.3);margin-top:4px;">COMING SOON</p>
+            <div style="width:40px;height:1px;background:rgba(255,255,255,.15);margin:20px auto 0 auto;"></div>
+            <p style="font-family:'Noto Serif SC',serif;font-size:.95rem;color:rgba(255,255,255,.6);margin-top:18px;letter-spacing:2px;">毛巾坏</p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.72rem;color:rgba(255,255,255,.28);margin-top:6px;letter-spacing:1px;">虚拟歌手原创专辑</p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.72rem;color:rgba(255,255,255,.28);margin-top:4px;letter-spacing:1px;">共七首</p>
+            <div style="width:40px;height:1px;background:rgba(255,255,255,.15);margin:20px auto 0 auto;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 概念诗句 ═══ -->
+    <section style="padding:80px 48px 70px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06);">
+      <p style="font-family:'Noto Serif SC',serif;font-size:1.15rem;color:rgba(255,255,255,.62);line-height:2.8;letter-spacing:3px;">天将亮未亮</p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:1.15rem;color:rgba(255,255,255,.62);line-height:2.8;letter-spacing:3px;">梦将醒未醒</p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:1.15rem;color:rgba(255,255,255,.62);line-height:2.8;letter-spacing:3px;">执念将放未放</p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:1.15rem;color:rgba(255,255,255,.62);line-height:2.8;letter-spacing:3px;">自我将立未立</p>
+      <p style="font-family:'Noto Sans SC',sans-serif;font-size:.9rem;color:rgba(255,255,255,.35);margin-top:36px;letter-spacing:1px;">这是一张关于"交界"的专辑。</p>
+    </section>
+
+    <!-- ═══ 主视觉插画 ═══ -->
+    <section style="display:flex;justify-content:center;padding:0;position:relative;overflow:hidden;">
+      <img src="/images/music-art/ruguo.png" alt="将晓" style="width:100%;max-width:900px;height:auto;object-fit:contain;display:block;" onerror="this.outerHTML='<div style=\"width:100%;max-width:900px;height:400px;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.15);font-family:\"Noto Sans SC\",sans-serif;\">曲绘图片 /images/music-art/ruguo.png</>'"" />
+    </section>
+
+    <!-- ═══ 曲目导航条 ═══ -->
+    <section style="padding:44px 48px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:nowrap;overflow-x:auto;">
+        {tracks.map(t => (
+          <a href={`#track-${t.num}`} style="text-decoration:none;text-align:center;min-width:64px;flex-shrink:0;transition:opacity .25s;" class="track-nav-item">
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.72rem;color:rgba(255,255,255,.25);letter-spacing:1px;">{t.num}</p>
+            <p style="font-family:'Noto Serif SC',serif;font-size:.95rem;color:rgba(255,255,255,.7);margin:4px 0 2px;letter-spacing:2px;">{t.name}</p>
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.55rem;color:rgba(255,255,255,.15);letter-spacing:1.5px;text-transform:uppercase;">{t.pinyin}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- ═══ 歌词详情区（两栏）═══ -->
+    <section style="padding:56px 48px 80px;display:flex;gap:80px;max-width:960px;margin:0 auto;">
+      <!-- 左栏：01-04 -->
+      <div style="flex:1;">
+        {tracks.slice(0, 4).map(t => (
+          <div id={`track-${t.num}`} style="margin-bottom:52px;scroll-margin-top:80px;">
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.78rem;color:rgba(255,255,255,.22);letter-spacing:1px;margin-bottom:6px;">{t.num}</p>
+            <h3 style="font-family:'Noto Serif SC',serif;font-size:1.25rem;font-weight:700;color:rgba(255,255,255,.82);margin-bottom:16px;letter-spacing:2px;">{t.name}</h3>
+            {t.lines.map(line => (
+              <p style="font-family:'Noto Serif SC','LXGW WenKai',serif;font-size:.92rem;color:rgba(255,255,255,.45);line-height:2.2;letter-spacing:.5px;">{line}</p>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <!-- 右栏：05-07 -->
+      <div style="flex:1;padding-top:0;">
+        {tracks.slice(4).map(t => (
+          <div id={`track-${t.num}`} style="margin-bottom:52px;scroll-margin-top:80px;">
+            <p style="font-family:'Noto Sans SC',sans-serif;font-size:.78rem;color:rgba(255,255,255,.22);letter-spacing:1px;margin-bottom:6px;">{t.num}</p>
+            <h3 style="font-family:'Noto Serif SC',serif;font-size:1.25rem;font-weight:700;color:rgba(255,255,255,.82);margin-bottom:16px;letter-spacing:2px;">{t.name}</h3>
+            {t.lines.map(line => (
+              <p style="font-family:'Noto Serif SC','LXGW WenKai',serif;font-size:.92rem;color:rgba(255,255,255,.45);line-height:2.2;letter-spacing:.5px;">{line}</p>
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- ═══ 底部结语 ═══ -->
+    <section style="padding:60px 48px 100px;text-align:center;border-top:1px solid rgba(255,255,255,.06);">
+      <p style="font-family:'Noto Serif SC',serif;font-size:.88rem;color:rgba(255,255,255,.2);line-height:2.4;letter-spacing:1px;">学着接受失去，承认渺小，并仍然选择相信爱。</p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:.88rem;color:rgba(255,255,255,.2);line-height:2.4;letter-spacing:1px;">学着接受失去，承认渺小，并仍然选择相信爱。</p>
+      <p style="font-family:'Noto Serif SC',serif;font-size:.88rem;color:rgba(255,255,255,.14);line-height:2.4;letter-spacing:1px;">学着接受失去，承认渺小，并仍然选择相信爱。</p>
+    </section>
+
+  </div>
+
+  <style>
+    .track-nav-item:hover { opacity: .6; }
+    .track-nav-item:hover p:nth-child(2) { color: rgba(255,255,255,.95); }
+  </style>
+</BaseLayout>
