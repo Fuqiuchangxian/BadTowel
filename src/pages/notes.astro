@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { siteConfig } from '../config';
+const notes=(await getCollection('notes')).sort((a,b)=>new Date(b.data.date).getTime()-new Date(a.data.date).getTime());
+const categories=[...new Set(notes.flatMap(n=>n.data.categories))];
+const LOCK=`<span class="lock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>`;
+const STAR=`<span class="star-icon"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></span>`;
+---
+<BaseLayout title="笔记">
+  <div class="flex" style="position:fixed;top:56px;left:0;right:0;bottom:0;">
+    <div class="side-panel">
+      <div class="filter-bar" id="cat-filter"><button class="filter-tag active" data-filter="">全部</button>{categories.map(c=><button class="filter-tag" data-filter={c}>{c}</button>)}</div>
+      <div class="flex-1 overflow-y-auto" id="note-list">
+        {notes.map(note=>(<div class="list-item" data-id={note.slug} data-categories={note.data.categories.join(',')}><div class="list-item-title"><span>{note.data.title}</span>{note.data.starred&&<Fragment set:html={STAR}/>}{!note.data.public&&<Fragment set:html={LOCK}/>}</div><div class="flex items-center gap-1.5"><span class="list-item-date">{note.data.date}</span>{note.data.categories.map(c=><span class="tag-gray">{c}</span>)}</div></div>))}
+      </div>
+    </div>
+    <div class="reader-area" id="note-reader"><div class="reader-empty"><img src={siteConfig.placeholderImage} alt="" onerror="this.style.display='none'"/></div></div>
+  </div>
+
+  <!-- Fixed TOC toggle button -->
+  <button id="toc-toggle" class="toc-fixed-btn" style="display:none;" title="目录">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+  </button>
+
+  <script define:vars={{notesData:notes.map(n=>({slug:n.slug,title:n.data.title,date:n.data.date,categories:n.data.categories,body:n.body,isPublic:n.data.public!==false,lockReason:n.data.lockReason||'',starred:!!n.data.starred}))}}>
+    const list=document.getElementById('note-list'),reader=document.getElementById('note-reader'),filterBar=document.getElementById('cat-filter'),tocToggle=document.getElementById('toc-toggle'),md=window.__BT_MD;
+    let tocEl=null,currentHeadings=[];
+    function isAdmin(){return !!(window).__BT_ADMIN}
+    const lockSvg=`<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+    function lockScreen(r){return `<div class="reader-card animate-fade-in-up" style="text-align:center;padding:80px 56px;"><div style="margin:0 auto 20px;opacity:.2;width:56px;">${lockSvg}</div><h2 style="font-size:1.2rem;font-weight:600;color:var(--gray-700);margin-bottom:12px;font-family:'Noto Sans SC',sans-serif;">当前内容未公开</h2><p style="font-size:.875rem;color:var(--gray-400);font-family:'Noto Sans SC',sans-serif;line-height:1.8;max-width:360px;margin:0 auto;white-space:pre-line;">${r||'作者暂未公开此内容'}</p></div>`}
+    const starHint=`<div class="starred-hint"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg><span>这是作者偏爱的作品之一</span></div>`;
+    const adminBadge=t=>!t?`<span style="font-size:.6875rem;font-family:'Noto Sans SC',sans-serif;padding:1px 8px;border-radius:4px;color:#f59e0b;background:rgba(245,158,11,.1);margin-left:8px;">未公开</span>`:'';
+
+    filterBar.addEventListener('click',e=>{const btn=e.target.closest('.filter-tag');if(!btn)return;const f=btn.dataset.filter;filterBar.querySelectorAll('.filter-tag').forEach(b=>b.classList.remove('active'));btn.classList.add('active');list.querySelectorAll('.list-item').forEach(item=>{const cats=(item.dataset.categories||'').split(',');item.style.display=!f||cats.includes(f)?'':'none'})});
+
+    function showToc(){
+      if(tocEl||!currentHeadings.length)return;
+      const toc=document.createElement('div');toc.className='popup-panel';toc.style.cssText='position:fixed;right:32px;bottom:88px;width:220px;';
+      const items=currentHeadings.map(h=>`<div data-target="${h.id}" style="padding:6px 14px;padding-left:${14+(h.level-1)*16}px;cursor:pointer;font-size:.8125rem;color:var(--gray-600);font-family:'Noto Sans SC',sans-serif;transition:all .15s;border-radius:4px;margin:1px 4px;" onmouseover="this.style.background='var(--color-accent-bg)';this.style.color='var(--color-accent)'" onmouseout="this.style.background='';this.style.color='var(--gray-600)'">${h.text}</div>`).join('');
+      toc.innerHTML=`<div style="padding:10px 14px;border-bottom:.5px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);border-radius:12px 12px 0 0;"><span style="font-size:.8125rem;font-weight:600;color:var(--gray-700);font-family:'Noto Sans SC',sans-serif;">目录</span><button class="modal-close" id="tc" style="width:24px;height:24px;font-size:1rem;">×</button></div><div style="padding:8px 0;max-height:320px;overflow-y:auto;">${items}</div>`;
+      document.body.appendChild(toc);tocEl=toc;tocToggle.classList.add('active');
+      toc.addEventListener('click',ev=>{const t=ev.target.closest('[data-target]');if(t)document.getElementById(t.dataset.target)?.scrollIntoView({behavior:'smooth',block:'start'})});
+      toc.querySelector('#tc').addEventListener('click',()=>hideToc());
+    }
+    function hideToc(){if(tocEl){tocEl.remove();tocEl=null;tocToggle.classList.remove('active')}}
+
+    tocToggle.addEventListener('click',()=>{if(tocEl)hideToc();else showToc()});
+
+    list.addEventListener('click',e=>{
+      const item=e.target.closest('.list-item');if(!item)return;
+      const note=notesData.find(n=>n.slug===item.dataset.id);if(!note)return;
+      list.querySelectorAll('.list-item').forEach(i=>i.classList.remove('active'));item.classList.add('active');reader.scrollTop=0;
+      hideToc();currentHeadings=[];
+      if(!note.isPublic&&!isAdmin()){reader.innerHTML=lockScreen(note.lockReason);tocToggle.style.display='none';return}
+      currentHeadings=md.extractHeadings(note.body);
+      const catTags=note.categories.map(c=>`<span class="tag-accent" style="padding:2px 12px;border-radius:6px;font-size:.75rem;">${c}</span>`).join('');
+      const rt=Math.max(1,Math.round((note.body||'').length/400));
+      const bodyHtml=md.renderMarkdown(note.body,{addIds:true});
+      reader.innerHTML=`<div class="reader-card animate-fade-in-up"><h1 class="reader-title">${note.title}${adminBadge(note.isPublic)}</h1>${note.starred?starHint:''}<div class="reader-meta"><span class="list-item-date">${note.date}</span>${catTags}<span class="reading-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${rt} 分钟阅读</span></div><div class="prose-content">${bodyHtml}</div></div>`;
+      // Show TOC button and auto-open if there are headings
+      if(currentHeadings.length>0){tocToggle.style.display='flex';showToc()}else{tocToggle.style.display='none'}
+    });
+  </script>
+</BaseLayout>

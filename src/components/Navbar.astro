@@ -1,0 +1,82 @@
+---
+import { siteConfig } from '../config';
+interface Props { transparent?: boolean; currentPath: string; }
+const { transparent = false, currentPath } = Astro.props;
+const navItems = [
+  { href: '/', label: '首页' },{ href: '/poetry', label: '诗歌' },{ href: '/music', label: '音乐' },
+  { href: '/blog', label: '博客' },{ href: '/notes', label: '笔记' },{ href: '/about', label: '关于' },
+];
+function isActive(href: string) { return href === '/' ? currentPath === '/' : currentPath.startsWith(href); }
+---
+<nav class:list={['fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 h-14 transition-all duration-300', transparent ? 'nav-bar-home' : 'nav-bar']}>
+  <div class="flex items-center gap-8">
+    <a href="/" class:list={['nav-logo flex items-center gap-2', transparent ? 'text-white' : 'text-gray-900']}>
+      <img src={siteConfig.logoImage} alt="" class="h-6" id="logo-img" onerror="this.style.display='none'" />
+      <span>{siteConfig.name}</span>
+    </a>
+    <div class="flex items-center gap-1">
+      {navItems.map(item => (
+        <a href={item.href} class:list={['nav-link', isActive(item.href) ? 'active' : '']}>{item.label}</a>
+      ))}
+    </div>
+  </div>
+  <div class="flex items-center gap-3" id="search-wrapper">
+    <a href="/assistant" class="ai-entry-btn" title="AI 助手">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>小毛巾</span>
+    </a>
+    <div class="relative">
+      <div id="admin-badge" class="hidden" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;z-index:10;"></div>
+      <input id="global-search" type="text" placeholder="问问小毛巾…" class="search-input" style="width:160px;" />
+      <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.4"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <div id="search-results" class="search-dropdown hidden"></div>
+    </div>
+    <img src={siteConfig.mascotImage} alt="mascot" class="w-11 h-11 object-contain transition-transform hover:scale-110" onerror="this.style.display='none'" />
+  </div>
+</nav>
+
+<script is:inline>
+  window.__BT_ADMIN = sessionStorage.getItem('bt_admin') === '1';
+  if (window.__BT_ADMIN) document.addEventListener('DOMContentLoaded', () => { const b = document.getElementById('admin-badge'); if (b) b.classList.remove('hidden'); });
+</script>
+
+<script>
+  import Fuse from 'fuse.js';
+  document.addEventListener('DOMContentLoaded', async () => {
+    const input = document.getElementById('global-search') as HTMLInputElement;
+    const results = document.getElementById('search-results');
+    const badge = document.getElementById('admin-badge');
+    if (!input || !results) return;
+    const PASS = 'admin南极磷虾王';
+    let fuse: Fuse<any> | null = null;
+    try { const r = await fetch('/search-index.json'); fuse = new Fuse(await r.json(), { keys: ['title','collection','album','categories'], threshold: 0.3 }); } catch {}
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      if (q === PASS) {
+        const on = !(window as any).__BT_ADMIN;
+        (window as any).__BT_ADMIN = on;
+        sessionStorage.setItem('bt_admin', on ? '1' : '0');
+        input.value = '';
+        results.classList.add('hidden');
+        if (badge) badge.classList.toggle('hidden', !on);
+        window.location.reload();
+        return;
+      }
+      if (q === '/admin') { results.innerHTML = `<a href="/admin" class="search-item"><span>→ 进入管理后台</span><span class="tag-accent">admin</span></a>`; results.classList.remove('hidden'); return; }
+      if (!q || !fuse) { results.classList.add('hidden'); return; }
+      const hits = fuse.search(q).slice(0, 6);
+      if (!hits.length) { results.classList.add('hidden'); return; }
+      results.innerHTML = hits.map((r: any) => `<a href="${r.item.url}" class="search-item"><span>${r.item.title}</span><span class="tag-accent">${r.item.typeLabel}</span></a>`).join('');
+      results.classList.remove('hidden');
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const q = input.value.trim();
+        if (q === '/admin') { window.location.href = '/admin'; return; }
+        if (q) { window.location.href = '/assistant?q=' + encodeURIComponent(q); return; }
+      }
+    });
+    document.addEventListener('click', e => { if (!(e.target as Element).closest('#search-wrapper')) results.classList.add('hidden'); });
+  });
+</script>

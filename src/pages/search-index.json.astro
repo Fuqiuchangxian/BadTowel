@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+
+const poems = await getCollection('poems');
+const songs = await getCollection('songs');
+const blogs = await getCollection('blogs');
+const notes = await getCollection('notes');
+
+const index = [
+  ...poems.map(p => ({ title: p.data.title, collection: p.data.collection || '', typeLabel: '诗歌', url: `/poetry#${p.slug}` })),
+  ...songs.map(s => ({ title: s.data.title, album: s.data.album || '', typeLabel: '音乐', url: `/music#${s.slug}` })),
+  ...blogs.map(b => ({ title: b.data.title, typeLabel: '博客', url: `/blog#${b.slug}` })),
+  ...notes.map(n => ({ title: n.data.title, categories: n.data.categories.join(' '), typeLabel: '笔记', url: `/notes#${n.slug}` })),
+];
+---
+<Fragment set:html={JSON.stringify(index)} />

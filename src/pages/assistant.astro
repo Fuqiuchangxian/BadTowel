@@ -1,0 +1,646 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config';
+import { aiConfig } from '../ai-config';
+import { getCollection } from 'astro:content';
+
+const poems = await getCollection('poems');
+const songs = await getCollection('songs');
+const blogs = await getCollection('blogs');
+const notes = await getCollection('notes');
+
+const contentIndex = [
+  ...poems.map(p => ({ title: p.data.title, type: '诗歌', collection: p.data.collection || '', date: p.data.date, excerpt: (p.body || '').slice(0, 80) })),
+  ...songs.map(s => ({ title: s.data.title, type: '音乐', album: s.data.album || '', date: s.data.date, excerpt: (s.body || '').slice(0, 80) })),
+  ...blogs.map(b => ({ title: b.data.title, type: '博客', date: b.data.date, excerpt: (b.body || '').slice(0, 80) })),
+  ...notes.map(n => ({ title: n.data.title, type: '笔记', date: n.data.date, categories: n.data.categories.join('、'), excerpt: (n.body || '').slice(0, 80) })),
+];
+---
+<BaseLayout title="AI 助手" isHome={true} transparentNav={false}>
+  <div class="assistant-page">
+    <!-- Left: Magazine-style welcome / info panel -->
+    <aside class="assistant-sidebar" id="sidebar">
+      <div class="sidebar-inner">
+        <div class="sidebar-brand">
+          <div class="brand-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/></svg>
+          </div>
+          <div>
+            <h1 class="brand-title">小毛巾</h1>
+            <p class="brand-sub">BadTowel 的 AI 伙伴</p>
+          </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-quote">
+          "拥抱千万个的你，呓语终究是一隅。"
+        </div>
+
+        <div class="sidebar-actions">
+          <button id="new-chat-btn" class="sidebar-action-btn primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            新对话
+          </button>
+          <button id="history-btn" class="sidebar-action-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            历史
+          </button>
+          <button id="deep-toggle" class="sidebar-action-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span class="deep-label">深度思考</span>
+          </button>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-capabilities">
+          <div class="cap-item"><span class="cap-icon">🎯</span><span>推荐作品</span></div>
+          <div class="cap-item"><span class="cap-icon">🔍</span><span>深度解读</span></div>
+          <div class="cap-item"><span class="cap-icon">✨</span><span>创作灵感</span></div>
+          <div class="cap-item"><span class="cap-icon">💬</span><span>聊天陪伴</span></div>
+          <div class="cap-item"><span class="cap-icon">🔊</span><span>声声入耳</span></div>
+        </div>
+
+        <div class="sidebar-footer">
+          <span>AI 回答仅供参考</span>
+          <span>基于 {contentIndex.length} 篇内容</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right: Chat area -->
+    <main class="assistant-chat-main">
+      <div class="chat-area" id="chat-area">
+        <!-- Welcome -->
+        <div class="welcome-hero" id="welcome-hero">
+          <h2 class="welcome-title">今天想聊点什么？</h2>
+          <p class="welcome-sub">我可以推荐诗歌、解读歌词、聊创作，或者只是陪你说话。</p>
+          <div class="welcome-cards">
+            <button class="welcome-card" data-msg="推荐一首诗给我，说说为什么推荐">
+              <div class="welcome-card-icon">📜</div>
+              <div class="welcome-card-text">推荐一首诗</div>
+            </button>
+            <button class="welcome-card" data-msg="推荐一首歌给我">
+              <div class="welcome-card-icon">🎵</div>
+              <div class="welcome-card-text">推荐一首歌</div>
+            </button>
+            <button class="welcome-card" data-msg="今天心情不太好，给我推荐点什么能治愈的">
+              <div class="welcome-card-icon">🌧️</div>
+              <div class="welcome-card-text">心情不好</div>
+            </button>
+            <button class="welcome-card" data-msg="帮我深度解读一下《未醒》这首歌">
+              <div class="welcome-card-icon">🔍</div>
+              <div class="welcome-card-text">解读作品</div>
+            </button>
+            <button class="welcome-card" data-msg="根据网站的内容，给我一些创作灵感">
+              <div class="welcome-card-icon">✨</div>
+              <div class="welcome-card-text">创作灵感</div>
+            </button>
+            <button class="welcome-card" data-msg="介绍一下这个网站和它的主人">
+              <div class="welcome-card-icon">💡</div>
+              <div class="welcome-card-text">了解网站</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions above input -->
+      <div class="chat-quick-bar" id="quick-bar">
+        <button class="quick-bar-btn" data-qa="推荐一首诗给我">📜 推荐作品</button>
+        <button class="quick-bar-btn" data-qa="给我一些创作灵感">✨ 创作灵感</button>
+        <button class="quick-bar-btn" data-qa="读读这个">🔊 读读这个</button>
+        <button class="quick-bar-btn" data-qa="再生成一遍">🔄 再生成</button>
+        <button class="quick-bar-btn" data-qa="介绍一下这个网站和它的主人">💡 了解网站</button>
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+          <textarea id="chat-input" placeholder="和小毛巾说点什么…" rows="1"></textarea>
+          <button id="send-btn" class="send-btn" title="发送">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script define:vars={{ apiKey: aiConfig.apiKey, apiEndpoint: aiConfig.apiEndpoint, model: aiConfig.model, deepModel: aiConfig.deepModel, systemPrompt: aiConfig.systemPrompt, contentIndex }}>
+    const chatArea = document.getElementById('chat-area');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const historyBtn = document.getElementById('history-btn');
+    const welcomeHero = document.getElementById('welcome-hero');
+    let isDeepMode = false;
+    let currentModel = model;
+    let conversations = [];
+    let currentConvId = null;
+    let isStreaming = false;
+
+    // Deep thinking toggle
+    const deepBtn = document.getElementById('deep-toggle');
+    if (deepBtn) {
+      deepBtn.addEventListener('click', () => {
+        isDeepMode = !isDeepMode;
+        currentModel = isDeepMode ? deepModel : model;
+        deepBtn.classList.toggle('active', isDeepMode);
+        deepBtn.querySelector('.deep-label').textContent = isDeepMode ? '深度思考 ON' : '深度思考';
+      });
+    }
+
+    const systemMsg = { role: 'system', content: systemPrompt + '\n\n以下是网站的内容索引：\n' + JSON.stringify(contentIndex, null, 0) };
+    let messages = [systemMsg];
+
+    // Conversation management
+    function loadConversations() {
+      try { conversations = JSON.parse(localStorage.getItem('bt_conversations') || '[]'); } catch { conversations = []; }
+    }
+    function saveConversations() {
+      try { localStorage.setItem('bt_conversations', JSON.stringify(conversations)); } catch {}
+    }
+    function createConversation() {
+      const id = Date.now().toString(36);
+      const conv = { id, title: '新对话', messages: [systemMsg], createdAt: Date.now() };
+      conversations.unshift(conv);
+      if (conversations.length > 20) conversations = conversations.slice(0, 20);
+      saveConversations();
+      return conv;
+    }
+    function switchConversation(id) {
+      const conv = conversations.find(c => c.id === id);
+      if (!conv) return;
+      currentConvId = id;
+      messages = conv.messages;
+      chatArea.innerHTML = '';
+      if (messages.length <= 1) {
+        showWelcome();
+      } else {
+        welcomeHero && (welcomeHero.style.display = 'none');
+        for (let i = 1; i < messages.length; i++) {
+          if (messages[i].role === 'user' || messages[i].role === 'assistant') {
+            addMessage(messages[i].role, messages[i].content);
+          }
+        }
+      }
+      chatInput.focus();
+    }
+    function deleteConversation(id) {
+      conversations = conversations.filter(c => c.id !== id);
+      saveConversations();
+      if (currentConvId === id) { newChatBtn.click(); }
+    }
+    function autoName(conv, firstUserMsg) {
+      if (conv.title !== '新对话') return;
+      conv.title = (firstUserMsg || '').slice(0, 20) || '新对话';
+      saveConversations();
+    }
+
+    function showWelcome() {
+      if (!welcomeHero) return;
+      if (!chatArea.contains(welcomeHero)) {
+        chatArea.innerHTML = '';
+        chatArea.appendChild(welcomeHero);
+      }
+      welcomeHero.style.display = '';
+      bindWelcomeCards();
+    }
+
+    function hideWelcome() {
+      if (welcomeHero) welcomeHero.style.display = 'none';
+    }
+
+    function bindWelcomeCards() {
+      document.querySelectorAll('.welcome-card[data-msg]').forEach(btn => {
+        btn.addEventListener('click', () => sendMessage(btn.dataset.msg), { once: true });
+      });
+    }
+    bindWelcomeCards();
+
+    // New chat
+    newChatBtn.addEventListener('click', () => {
+      const conv = createConversation();
+      switchConversation(conv.id);
+    });
+
+    // History
+    historyBtn.addEventListener('click', () => {
+      loadConversations();
+      let existing = document.getElementById('history-panel');
+      if (existing) { existing.remove(); return; }
+      const panel = document.createElement('div');
+      panel.id = 'history-panel';
+      panel.className = 'history-panel';
+      const items = conversations.map(c => {
+        const date = new Date(c.createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const isActive = c.id === currentConvId;
+        return `<div class="history-item${isActive ? ' active' : ''}" data-id="${c.id}"><div class="history-item-title">${c.title}</div><div class="history-item-date">${date}</div><button class="history-delete" data-id="${c.id}" title="删除">\u00d7</button></div>`;
+      }).join('');
+      panel.innerHTML = `<div class="history-header"><span>历史对话</span><button class="modal-close" id="close-history">\u00d7</button></div><div class="history-list">${items || '<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:.8125rem;">暂无历史对话</div>'}</div>`;
+      document.body.appendChild(panel);
+      panel.querySelector('#close-history').addEventListener('click', () => panel.remove());
+      panel.querySelectorAll('.history-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.history-delete')) return;
+          switchConversation(el.dataset.id);
+          panel.remove();
+        });
+      });
+      panel.querySelectorAll('.history-delete').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteConversation(el.dataset.id);
+          el.closest('.history-item').remove();
+        });
+      });
+    });
+
+    // Init
+    loadConversations();
+    if (conversations.length > 0) {
+      switchConversation(conversations[0].id);
+    } else {
+      const conv = createConversation();
+      currentConvId = conv.id;
+    }
+
+    // Handle ?q= from search and ?tts= from highlight (deferred to ensure all functions are ready)
+    setTimeout(() => {
+      try {
+        const urlQ = new URLSearchParams(window.location.search).get('q');
+        const urlTts = new URLSearchParams(window.location.search).get('tts');
+        if (urlQ) {
+          history.replaceState(null, '', '/assistant');
+          sendMessage(urlQ);
+        } else if (urlTts) {
+          history.replaceState(null, '', '/assistant');
+          hideWelcome();
+          const cardId = 'tts-' + Date.now().toString(36);
+          addTtsCard(urlTts, cardId);
+        }
+      } catch {}
+    }, 100);
+
+    function autoResize() {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    }
+    chatInput.addEventListener('input', autoResize);
+
+    function scrollToBottom() {
+      chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+    }
+
+    function renderMd(text) {
+      return text
+        .replace(/&/g, '\x26amp;').replace(/</g, '\x26lt;').replace(/>/g, '\x26gt;')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code style="background:var(--gray-100);padding:1px 4px;border-radius:3px;font-size:.875em;">$1</code>')
+        .replace(/^### (.+)$/gm, '<strong style="font-size:1em;display:block;margin:.5em 0 .2em;">$1</strong>')
+        .replace(/^## (.+)$/gm, '<strong style="font-size:1.05em;display:block;margin:.6em 0 .3em;">$1</strong>')
+        .replace(/^# (.+)$/gm, '<strong style="font-size:1.1em;display:block;margin:.7em 0 .3em;">$1</strong>')
+        .replace(/^- (.+)$/gm, '<span style="display:block;padding-left:1em;">\u2022 $1</span>')
+        .replace(/^\d+\. (.+)$/gm, (m) => `<span style="display:block;padding-left:1em;">${m}</span>`)
+        .replace(/\n/g, '<br>');
+    }
+
+    function addMessage(role, content) {
+      const div = document.createElement('div');
+      div.className = `chat-msg ${role === 'user' ? 'user' : 'assistant'}`;
+      const avatar = role === 'user' ? '你' : '\u2726';
+      const html = role === 'user' ? content.replace(/&/g, '\x26amp;').replace(/</g, '\x26lt;').replace(/>/g, '\x26gt;').replace(/\n/g, '<br>') : renderMd(content);
+      div.innerHTML = `<div class="chat-avatar">${avatar}</div><div class="chat-bubble">${html}</div>`;
+      chatArea.appendChild(div);
+      scrollToBottom();
+      return div;
+    }
+
+    function addStreamingMessage() {
+      const div = document.createElement('div');
+      div.className = 'chat-msg assistant';
+      div.innerHTML = `<div class="chat-avatar">\u2726</div><div class="chat-bubble"><span class="streaming-text"></span></div>`;
+      chatArea.appendChild(div);
+      scrollToBottom();
+      return div.querySelector('.streaming-text');
+    }
+
+    async function sendMessage(text) {
+      if (!text.trim() || isStreaming) return;
+      chatInput.value = '';
+      autoResize();
+      hideWelcome();
+
+      addMessage('user', text);
+      messages.push({ role: 'user', content: text });
+      const conv = conversations.find(c => c.id === currentConvId);
+      if (conv) { conv.messages = messages; saveConversations(); }
+
+      const streamEl = addStreamingMessage();
+      isStreaming = true;
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch(apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'api-key': apiKey },
+          body: JSON.stringify({
+            model: currentModel,
+            messages,
+            stream: true,
+            temperature: isDeepMode ? 1.0 : 0.8,
+            top_p: 0.95,
+            max_completion_tokens: 1024,
+          }),
+        });
+
+        if (!res.ok) throw new Error(`API 错误: ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '', buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data:')) continue;
+            const data = trimmed.slice(5).trim();
+            if (data === '[DONE]') break;
+            try {
+              const json = JSON.parse(data);
+              const delta = json.choices?.[0]?.delta?.content;
+              if (delta) { fullText += delta; streamEl.innerHTML = renderMd(fullText); scrollToBottom(); }
+            } catch {}
+          }
+        }
+
+        messages.push({ role: 'assistant', content: fullText });
+        streamEl.classList.remove('streaming-text');
+        const conv2 = conversations.find(c => c.id === currentConvId);
+        if (conv2) { conv2.messages = messages; autoName(conv2, messages[1]?.content); saveConversations(); }
+
+      } catch (err) {
+        streamEl.innerHTML = `<span style="color:var(--gray-400);">抱歉，出现了错误：${err.message}. 请检查 API Key 是否已配置。</span>`;
+      }
+
+      isStreaming = false;
+      sendBtn.disabled = false;
+      chatInput.focus();
+    }
+
+    sendBtn.addEventListener('click', () => sendMessage(chatInput.value));
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(chatInput.value); }
+    });
+
+    chatInput.focus();
+
+    // In-chat TTS: detect TTS requests, show TTS cards, generate audio messages
+    const ttsVoices=['冰糖','茉莉','苏打','白桦'];
+    const ttsVoiceGender={'冰糖':'♀','茉莉':'♀','苏打':'♂','白桦':'♂'};
+
+    // Detect if user message is a TTS request
+    function detectTtsRequest(text){
+      const t=text.trim();
+      // "再生成一遍" etc.
+      if(/^(?:再生成一遍|再读一遍|重新读|再来一次|换个声音)/.test(t)) return '__REGEN__';
+      // "读读：xxx" or "朗读xxx" → use xxx directly (must have content after keyword)
+      const m=t.match(/^(?:读读这个|念念这个|读一下这个|朗读这个|帮我读一下|读给我听|读读|念念|念一下|读一下|给我读|读给我听|朗读|语音|读这个)[：:\s]+([\s\S]+)/);
+      if(m) return m[1].trim();
+      // "读读这个" "念念" etc. (no explicit text) → extract from context
+      if(/^(?:读读这个|念念这个|读一下这个|朗读这个|帮我读一下|读给我听|读读|念念|念一下|读一下|给我读|读给我听|朗读|语音|读这个)$/.test(t)){
+        return '__EXTRACT__';
+      }
+      return null;
+    }
+
+    // Insert TTS card into chat
+    function addTtsCard(text,cardId,suggestedStyle){
+      const div=document.createElement('div');
+      div.className='chat-msg assistant';
+      const styleValue=suggestedStyle?`value="${suggestedStyle}"`:'';
+      div.innerHTML=`<div class="chat-avatar">\u2726</div><div class="chat-bubble"><div class="tts-card" id="${cardId}"><div class="tts-card-header"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg><span class="tts-card-title">声声入耳</span></div><textarea class="tts-card-preview-edit" rows="3">${text}</textarea><div class="tts-card-voices">${ttsVoices.map(v=>`<button class="tts-voice-btn${v==='冰糖'?' active':''}" data-voice="${v}">${v} ${ttsVoiceGender[v]}</button>`).join('')}</div><input class="tts-style-input" ${styleValue} placeholder="风格（如：温柔朗读、深情低语…）" /><button class="tts-card-generate">生成语音</button><div class="tts-card-status"></div></div></div></div>`;
+      chatArea.appendChild(div);scrollToBottom();
+
+      const card=div.querySelector('.tts-card');
+      const genBtn=card.querySelector('.tts-card-generate');
+      const status=card.querySelector('.tts-card-status');
+      let selVoice='冰糖';
+
+      card.querySelectorAll('.tts-voice-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          card.querySelectorAll('.tts-voice-btn').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');selVoice=btn.dataset.voice;
+        });
+      });
+
+      genBtn.addEventListener('click',()=>{
+        const readText=card.querySelector('.tts-card-preview-edit').value.trim();
+        if(!readText){status.textContent='请输入要朗读的文字';return}
+        const style=card.querySelector('.tts-style-input').value.trim()||'温柔的朗读语气，语速适中';
+        status.textContent='正在合成…';genBtn.disabled=true;
+        card.classList.add('tts-card-done');
+        // Disable all buttons in card
+        card.querySelectorAll('.tts-voice-btn').forEach(b=>b.disabled=true);
+        card.querySelector('.tts-style-input').disabled=true;
+
+        fetch('/api/mimo/v1/chat/completions',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','api-key':apiKey},
+          body:JSON.stringify({
+            model:'mimo-v2.5-tts',
+            messages:[{role:'user',content:style},{role:'assistant',content:readText}],
+            audio:{format:'wav',voice:selVoice},stream:false
+          })
+        }).then(r=>r.json()).then(data=>{
+          const ad=data.choices?.[0]?.message?.audio;
+          if(ad&&ad.data){
+            const bytes=Uint8Array.from(atob(ad.data),c=>c.charCodeAt(0));
+            const blob=new Blob([bytes],{type:'audio/wav'});
+            const url=URL.createObjectURL(blob);
+            // Show audio message in chat
+            addAudioMessage(readText,url,selVoice);
+            status.textContent='已生成';
+          } else {
+            status.textContent='合成失败，请说"再生成一遍"重试';
+            card.classList.remove('tts-card-done');
+            genBtn.disabled=false;
+            card.querySelectorAll('.tts-voice-btn').forEach(b=>b.disabled=false);
+            card.querySelector('.tts-style-input').disabled=false;
+          }
+        }).catch(()=>{
+          status.textContent='请求失败，请说"再生成一遍"重试';
+          card.classList.remove('tts-card-done');
+          genBtn.disabled=false;
+          card.querySelectorAll('.tts-voice-btn').forEach(b=>b.disabled=false);
+          card.querySelector('.tts-style-input').disabled=false;
+        });
+      });
+    }
+
+    // Add audio message bubble
+    function addAudioMessage(text,url,voice){
+      const div=document.createElement('div');
+      div.className='chat-msg assistant';
+      div.innerHTML=`<div class="chat-avatar">\u2726</div><div class="chat-bubble"><div class="tts-audio-msg"><div class="tts-audio-icon" data-url="${url}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21"/></svg></div><div class="tts-audio-info"><span class="tts-audio-voice">${voice}</span><span class="tts-audio-text">${text.slice(0,40)}${text.length>40?'…':''}</span></div></div></div></div>`;
+      chatArea.appendChild(div);scrollToBottom();
+      const icon=div.querySelector('.tts-audio-icon');
+      let playing=false,audio=null;
+      icon.addEventListener('click',()=>{
+        if(!audio){audio=new Audio(url)}
+        if(playing){audio.pause();audio.currentTime=0;playing=false;icon.classList.remove('playing');icon.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21"/></svg>'}
+        else{audio.play();playing=true;icon.classList.add('playing');icon.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'}
+        audio.onended=()=>{playing=false;icon.classList.remove('playing');icon.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21"/></svg>'}
+      });
+    }
+
+    // Extract text to read AND suggest a TTS style from context
+    async function extractTtsTextAndStyle(){
+      const convMsgs=messages.filter(m=>m.role==='assistant'||m.role==='user').slice(-6);
+      if(convMsgs.length===0) return {text:null,style:null};
+      const ctx=convMsgs.map(m=>(m.role==='user'?'用户':'小毛巾')+': '+m.content).join('\n');
+      try{
+        const res=await fetch(apiEndpoint,{
+          method:'POST',
+          headers:{'Content-Type':'application/json','api-key':apiKey},
+          body:JSON.stringify({
+            model:model,
+            messages:[
+              {role:'system',content:'你是一个文本提取和朗读风格助手。请从对话上下文中完成两个任务：\n1. 识别用户想要朗读的那段文字（通常是最近的一句诗、一段歌词、或一段有意义的文字）\n2. 根据这段文字的内容和情感，推荐一个最合适的朗读风格描述（如"深情低语"、"温柔缓慢"、"激昂有力"、"怅然若失"等）\n\n请严格按以下JSON格式输出，不要加任何其他内容：\n{"text":"要朗读的文字","style":"朗读风格描述"}'},
+              {role:'user',content:'对话上下文：\n'+ctx+'\n\n请输出JSON：'}
+            ],
+            stream:false,
+            temperature:0.3,
+            max_completion_tokens:300
+          })
+        });
+        const data=await res.json();
+        const raw=data.choices?.[0]?.message?.content?.trim();
+        if(!raw) return {text:null,style:null};
+        try{
+          const parsed=JSON.parse(raw);
+          return {text:parsed.text||null,style:parsed.style||null};
+        }catch{
+          return {text:raw,style:null};
+        }
+      }catch{return {text:null,style:null}}
+    }
+
+    // Override sendMessage to intercept TTS requests
+    const _origSendMessage=sendMessage;
+    sendMessage=async function(text){
+      if(!text.trim()||isStreaming) return;
+      chatInput.value='';autoResize();
+      let ttsText=detectTtsRequest(text);
+      if(ttsText==='__EXTRACT__'){
+        addMessage('user',text);
+        messages.push({role:'user',content:text});
+        const conv=conversations.find(c=>c.id===currentConvId);
+        if(conv){conv.messages=messages;saveConversations()}
+        // Show loading
+        const loadingDiv=addMessage('assistant','正在识别要朗读的文字…');
+        isStreaming=true;sendBtn.disabled=true;
+        const result=await extractTtsTextAndStyle();
+        loadingDiv.remove();
+        isStreaming=false;sendBtn.disabled=false;
+        if(result.text){
+          const cardId='tts-'+Date.now().toString(36);
+          addTtsCard(result.text,cardId,result.style);
+        }else{
+          addMessage('assistant','抱歉，没有找到可以朗读的文字。你可以直接说"读读：具体文字"来指定。');
+        }
+        return;
+      }
+      if(ttsText==='__REGEN__'){
+        const cards=chatArea.querySelectorAll('.tts-card');
+        const lastCard=cards[cards.length-1];
+        if(lastCard){
+          const preview=lastCard.querySelector('.tts-card-preview-edit').value;
+          lastCard.closest('.chat-msg').remove();
+          const cardId='tts-'+Date.now().toString(36);
+          addTtsCard(preview,cardId);
+        }
+        return;
+      }
+      if(ttsText){
+        addMessage('user',text);
+        messages.push({role:'user',content:text});
+        const conv=conversations.find(c=>c.id===currentConvId);
+        if(conv){conv.messages=messages;saveConversations()}
+        const cardId='tts-'+Date.now().toString(36);
+        addTtsCard(ttsText,cardId);
+        const conv2=conversations.find(c=>c.id===currentConvId);
+        if(conv2){autoName(conv2,text);saveConversations()}
+        return;
+      }
+      return _origSendMessage(text);
+    };
+    // Rebind send buttons
+    sendBtn.onclick=()=>sendMessage(chatInput.value);
+
+    // Quick bar buttons
+    document.querySelectorAll('.quick-bar-btn[data-qa]').forEach(btn=>{
+      btn.addEventListener('click',()=>sendMessage(btn.dataset.qa));
+    });
+
+    // Rate limiting: 50/hour, 100/day
+    const RATE_KEY='bt_rate';
+    function checkRate(){
+      try{
+        const now=Date.now();
+        let data=JSON.parse(localStorage.getItem(RATE_KEY)||'{"hour":[],"day":[]}');
+        // Clean old entries
+        data.hour=data.hour.filter(t=>now-t<3600000);
+        data.day=data.day.filter(t=>now-t<86400000);
+        localStorage.setItem(RATE_KEY,JSON.stringify(data));
+        if(data.hour.length>=50)return{ok:false,type:'hour',wait:Math.ceil((data.hour[0]+3600000-now)/60000)};
+        if(data.day.length>=100)return{ok:false,type:'day',wait:Math.ceil((data.day[0]+86400000-now)/60000)};
+        return{ok:true,remaining:{hour:50-data.hour.length,day:100-data.day.length}};
+      }catch{return{ok:true}}
+    }
+    function recordUse(){
+      try{
+        const now=Date.now();
+        let data=JSON.parse(localStorage.getItem(RATE_KEY)||'{"hour":[],"day":[]}');
+        data.hour.push(now);data.day.push(now);
+        localStorage.setItem(RATE_KEY,JSON.stringify(data));
+      }catch{}
+    }
+    function getRateInfo(){
+      try{
+        const now=Date.now();
+        let data=JSON.parse(localStorage.getItem(RATE_KEY)||'{"hour":[],"day":[]}');
+        data.hour=data.hour.filter(t=>now-t<3600000);
+        data.day=data.day.filter(t=>now-t<86400000);
+        return{hour:data.hour.length,day:data.day.length};
+      }catch{return{hour:0,day:0}}
+    }
+
+    // Patch sendMessage to enforce rate limit
+    const _rateMsg=sendMessage;
+    sendMessage=async function(text){
+      if(!text.trim()||isStreaming) return;
+      const rate=checkRate();
+      if(!rate.ok){
+        const unit=rate.type==='hour'?'小时':'天';
+        addMessage('assistant',`今天的互动次数太多了，请过 ${rate.wait} 分钟后再来。\n\n限额规则：每小时最多 50 次，每天最多 100 次。`);
+        messages.push({role:'assistant',content:`[系统] 用户触发了频率限制（${rate.type}）`});
+        return;
+      }
+      recordUse();
+      return _rateMsg(text);
+    };
+    // Rebind again after rate patch
+    sendBtn.onclick=()=>sendMessage(chatInput.value);
+    document.querySelectorAll('.quick-bar-btn[data-qa]').forEach(btn=>{
+      btn.onclick=()=>sendMessage(btn.dataset.qa);
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config';
+---
+
+<BaseLayout title="首页" transparentNav={true} isHome={true}>
+  <div class="relative w-full h-screen overflow-hidden bg-gray-900">
+    <!-- Background image -->
+    <img
+      src={siteConfig.heroImage}
+      alt="hero"
+      class="absolute inset-0 w-full h-full object-cover"
+      onerror="this.remove()"
+    />
+    <!-- Fallback gradient if no image -->
+    <div class="absolute inset-0 bg-gradient-to-b from-[#1a2e4a] via-[#2a4a6b] to-[#3a5a7b] -z-10"></div>
+    <!-- Slight darkening for text legibility -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/10"></div>
+
+    <!-- Typewriter text - no card, just text -->
+    <div
+      class="absolute left-12 top-[35%]"
+      style="font-size:2.5rem; font-family:'Noto Serif SC',serif; color:#fff; letter-spacing:2px; text-shadow:0 2px 30px rgba(0,0,0,0.25); white-space:nowrap;"
+    >
+      <span id="typewriter-text"></span><span class="ml-0.5 font-thin" style="animation:blink 1s infinite;">|</span>
+    </div>
+
+    <!-- Footer on home -->
+    <div class="absolute bottom-6 left-0 right-0 text-center" style="font-size:.75rem;color:rgba(255,255,255,.35);font-family:'Noto Sans SC',sans-serif;letter-spacing:.5px;">
+      © 2026 BadTowel
+    </div>
+  </div>
+
+  <script define:vars={{ sentences: siteConfig.heroSentences }}>
+    const el = document.getElementById('typewriter-text');
+    if (el) {
+      let sIdx = 0, cIdx = 0, deleting = false;
+      function tick() {
+        const s = sentences[sIdx];
+        if (!deleting && cIdx < s.length) {
+          cIdx++;
+          el.textContent = s.slice(0, cIdx);
+          setTimeout(tick, 110);
+        } else if (!deleting && cIdx === s.length) {
+          setTimeout(() => { deleting = true; tick(); }, 2800);
+        } else if (deleting && cIdx > 0) {
+          cIdx--;
+          el.textContent = s.slice(0, cIdx);
+          setTimeout(tick, 50);
+        } else {
+          deleting = false;
+          sIdx = (sIdx + 1) % sentences.length;
+          setTimeout(tick, 500);
+        }
+      }
+      tick();
+    }
+  </script>
+</BaseLayout>

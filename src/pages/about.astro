@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config';
+
+const { about, socialLinks } = siteConfig;
+const paragraphs = about.body.split('\n\n');
+---
+
+<BaseLayout title="关于">
+  <div style="max-width:640px;margin:0 auto;padding:96px 24px 40px;margin-top:56px;">
+    <div class="about-card animate-fade-in-up">
+      <p style="font-size:.875rem;color:var(--gray-400);font-family:'Noto Sans SC',sans-serif;margin-bottom:40px;">{about.greeting}</p>
+
+      <div style="font-size:1.0625rem;line-height:2.2;color:var(--gray-700);">
+        {paragraphs.map(p => (
+          <p style="margin-bottom:20px;">{p}</p>
+        ))}
+      </div>
+
+      <div style="margin-top:48px;">
+        <p style="font-size:1.0625rem;font-weight:500;color:var(--gray-800);font-family:'Noto Serif SC',serif;">{about.signature}</p>
+        <p style="font-size:.8125rem;color:var(--gray-400);margin-top:4px;font-family:'Noto Sans SC',sans-serif;">{about.dateLine}</p>
+      </div>
+
+      <div style="height:1px;background:var(--gray-200);margin:48px 0 32px;"></div>
+
+      <p style="font-size:.8125rem;color:var(--gray-400);font-family:'Noto Sans SC',sans-serif;margin-bottom:16px;">找到我</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        {socialLinks.map(link => (
+          <a href={link.url} target="_blank" rel="noreferrer" class="link-pill">{link.name}</a>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

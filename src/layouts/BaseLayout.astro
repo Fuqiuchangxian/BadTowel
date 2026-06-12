@@ -1,0 +1,239 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import { siteConfig } from '../config';
+interface Props { title?: string; transparentNav?: boolean; isHome?: boolean; }
+const { title = 'BadTowel', transparentNav = false, isHome = false } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — {siteConfig.name}</title>
+  <link rel="icon" type="image/svg+xml" href={siteConfig.logoImage} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script is:inline src="/scripts/markdown.js"></script>
+</head>
+<body>
+  <Navbar transparent={transparentNav} currentPath={currentPath} />
+  {!isHome && <div class="page-bg" style={`background-image: url('${siteConfig.heroImage}');`}></div>}
+  <slot />
+  {!isHome && <footer class="site-footer">© 2026 BadTowel</footer>}
+  {/* Text selection toolbar */}
+  <div id="selection-toolbar" class="selection-toolbar" style="display:none;">
+    <button class="selection-btn" id="sel-highlight" title="划线">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      划线
+    </button>
+    <button class="selection-btn" id="sel-ask-ai" title="问问小毛巾">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      问问小毛巾
+    </button>
+    <button class="selection-btn" id="sel-tts" title="声声入耳">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      声声入耳
+    </button>
+  </div>
+
+  <button id="back-to-top" class="back-to-top-btn" style="display:none;" title="回到顶部">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+  <script is:inline>
+    (function(){
+      const btn=document.getElementById('back-to-top');
+      let currentScrollEl=null;
+      function findScrollEl(){return document.querySelector('.reader-area')}
+      function updateBtn(){
+        const el=currentScrollEl;
+        if(!el||el.scrollTop<300){btn.style.display='none';btn.style.opacity='0'}
+        else{btn.style.display='flex';btn.style.opacity='1'}
+      }
+      function bindScroll(){
+        const el=findScrollEl();
+        if(el&&el!==currentScrollEl){
+          if(currentScrollEl)currentScrollEl.removeEventListener('scroll',updateBtn);
+          currentScrollEl=el;
+          currentScrollEl.addEventListener('scroll',updateBtn,{passive:true});
+          updateBtn();
+        }
+      }
+      btn.addEventListener('click',()=>{if(currentScrollEl)currentScrollEl.scrollTo({top:0,behavior:'smooth'})});
+      setInterval(bindScroll,500);
+      bindScroll();
+    })();
+
+    // Text selection toolbar + highlight + TTS
+    (function(){
+      const toolbar=document.getElementById('selection-toolbar');
+      const selHighlight=document.getElementById('sel-highlight');
+      const selAskAi=document.getElementById('sel-ask-ai');
+      const selTts=document.getElementById('sel-tts');
+      if(!toolbar) return;
+      let highlightPopup=null;
+
+      function getSelectedText(){
+        const sel=window.getSelection();
+        if(!sel||sel.isCollapsed||!sel.toString().trim()) return null;
+        const range=sel.getRangeAt(0);
+        const container=range.commonAncestorContainer;
+        const el=container.nodeType===3?container.parentElement:container;
+        if(!el||!el.closest('.poem-body,.lyrics-body,.prose-content')) return null;
+        return {text:sel.toString().trim(),range:range};
+      }
+      function positionToolbar(){
+        const sel=window.getSelection();
+        if(!sel||sel.isCollapsed) return;
+        const range=sel.getRangeAt(0);
+        const rect=range.getBoundingClientRect();
+        toolbar.style.display='flex';
+        toolbar.style.left=Math.max(8,rect.left+rect.width/2-toolbar.offsetWidth/2)+'px';
+        toolbar.style.top=rect.top+window.scrollY-toolbar.offsetHeight-8+'px';
+      }
+      document.addEventListener('mouseup',()=>{
+        setTimeout(()=>{
+          const result=getSelectedText();
+          if(result){positionToolbar()}else{if(!highlightPopup)toolbar.style.display='none'}
+        },10);
+      });
+      document.addEventListener('mousedown',e=>{
+        if(!toolbar.contains(e.target)&&!e.target.closest('.bt-highlight')&&!e.target.closest('.highlight-popup')){
+          toolbar.style.display='none';
+          if(highlightPopup){highlightPopup.remove();highlightPopup=null}
+        }
+      });
+
+      // Highlight selected text (with overlap detection)
+      selHighlight.addEventListener('click',()=>{
+        const result=getSelectedText();
+        if(!result) return;
+        const range=result.range;
+        // Check if selection overlaps any existing highlight
+        const ancestor=range.commonAncestorContainer;
+        const parentEl=ancestor.nodeType===3?ancestor.parentElement:ancestor;
+        const existingMarks=parentEl.closest('.poem-body,.lyrics-body,.prose-content')?.querySelectorAll('.bt-highlight')||[];
+        for(const mark of existingMarks){
+          const mr=document.createRange();
+          mr.selectNodeContents(mark);
+          // If new range fully contains existing mark, remove it and re-highlight
+          if(range.compareBoundaryPoints(Range.START_TO_START,mr)<=0&&range.compareBoundaryPoints(Range.END_TO_END,mr)>=0){
+            mark.replaceWith(...mark.childNodes);
+            continue;
+          }
+          // If existing mark fully contains new range, or they overlap
+          if(range.compareBoundaryPoints(Range.START_TO_END,mr)>0&&range.compareBoundaryPoints(Range.END_TO_START,mr)<0){
+            // Partial overlap: check if existing mark contains the selection
+            if(mr.compareBoundaryPoints(Range.START_TO_START,range)<=0&&mr.compareBoundaryPoints(Range.END_TO_END,range)>=0){
+              // Selection is inside existing highlight - show message
+              const tip=document.createElement('div');
+              tip.className='selection-toolbar';
+              tip.style.cssText=toolbar.style.cssText;
+              tip.innerHTML='<span style="padding:6px 12px;font-size:.75rem;color:var(--gray-500);font-family:Noto Sans SC,sans-serif;">这段已划线，请先取消再重新划线</span>';
+              document.body.appendChild(tip);
+              toolbar.style.display='none';
+              window.getSelection()?.removeAllRanges();
+              setTimeout(()=>tip.remove(),1500);
+              return;
+            }
+            // Partial overlap - warn
+            const tip=document.createElement('div');
+            tip.className='selection-toolbar';
+            tip.style.cssText=toolbar.style.cssText;
+            tip.innerHTML='<span style="padding:6px 12px;font-size:.75rem;color:var(--gray-500);font-family:Noto Sans SC,sans-serif;">与已有划线重叠，请先取消再划线</span>';
+            document.body.appendChild(tip);
+            toolbar.style.display='none';
+            window.getSelection()?.removeAllRanges();
+            setTimeout(()=>tip.remove(),1500);
+            return;
+          }
+        }
+        const span=document.createElement('mark');
+        span.className='bt-highlight';
+        try{range.surroundContents(span)}catch{}
+        toolbar.style.display='none';
+        window.getSelection()?.removeAllRanges();
+        bindHighlight(span);
+      });
+
+      // Ask AI
+      selAskAi.addEventListener('click',()=>{
+        const result=getSelectedText();
+        if(!result) return;
+        toolbar.style.display='none';
+        window.location.href='/assistant?q='+encodeURIComponent('请帮我解读一下这段文字：\n"'+result.text+'"');
+      });
+
+      // 声声入耳 (TTS)
+      selTts.addEventListener('click',()=>{
+        const result=getSelectedText();
+        if(!result) return;
+        toolbar.style.display='none';
+        window.location.href='/assistant?tts='+encodeURIComponent(result.text);
+      });
+
+      // Highlight click popup
+      function bindHighlight(mark){
+        mark.addEventListener('click',e=>{
+          e.stopPropagation();
+          if(highlightPopup){highlightPopup.remove();highlightPopup=null}
+          const text=mark.textContent;
+          const rect=mark.getBoundingClientRect();
+          const popup=document.createElement('div');
+          popup.className='highlight-popup';
+          popup.innerHTML='<button class="selection-btn" data-act="copy"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制</button><button class="selection-btn" data-act="ask"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>问问小毛巾</button><button class="selection-btn" data-act="tts-pro"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>声声入耳</button><button class="selection-btn danger" data-act="remove"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>取消划线</button>';
+          popup.style.cssText='position:fixed;left:'+Math.max(8,rect.left+rect.width/2-160)+'px;top:'+(rect.top+window.scrollY-46)+'px;max-width:320px;z-index:301;';
+          document.body.appendChild(popup);
+          highlightPopup=popup;
+          popup.addEventListener('click',ev=>{
+            const btn=ev.target.closest('[data-act]');
+            if(!btn) return;
+            const act=btn.dataset.act;
+            if(act==='copy'){navigator.clipboard.writeText(text);btn.textContent='已复制';setTimeout(()=>{popup.remove();highlightPopup=null},800)}
+            else if(act==='ask'){window.location.href='/assistant?q='+encodeURIComponent('请帮我解读一下这段文字：\n"'+text+'"')}
+            else if(act==='tts-pro'){window.location.href='/assistant?tts='+encodeURIComponent(text)}
+            else if(act==='remove'){mark.replaceWith(...mark.childNodes);popup.remove();highlightPopup=null}
+          });
+        });
+      }
+      // Bind existing highlights on load
+      document.querySelectorAll('.bt-highlight').forEach(bindHighlight);
+
+      // TTS via mimo API
+      let audioCtx=null;
+      function ttsSpeak(text,btn){
+        btn.innerHTML='<span class="tts-loading"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>';
+        btn.disabled=true;
+        fetch('/api/mimo/v1/chat/completions',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','api-key':'sk-c5zserp76zcu99qdscm5a48zkx7b94ufe2y2mdd0ztaejnp9'},
+          body:JSON.stringify({
+            model:'mimo-v2.5-tts',
+            messages:[{role:'user',content:'温柔的朗读语气，语速适中'},{role:'assistant',content:text}],
+            audio:{format:'wav',voice:'冰糖'},
+            stream:false
+          })
+        }).then(r=>r.json()).then(data=>{
+          const audioData=data.choices?.[0]?.message?.audio;
+          if(audioData&&audioData.data){
+            const bytes=Uint8Array.from(atob(audioData.data),c=>c.charCodeAt(0));
+            const blob=new Blob([bytes],{type:'audio/wav'});
+            const url=URL.createObjectURL(blob);
+            const audio=new Audio(url);
+            audio.play();
+            btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>朗读';
+            btn.disabled=false;
+            audio.onended=()=>URL.revokeObjectURL(url);
+          } else {
+            btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>朗读';
+            btn.disabled=false;
+          }
+        }).catch(()=>{
+          btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>朗读';
+          btn.disabled=false;
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
