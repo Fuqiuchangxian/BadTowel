@@ -4,7 +4,7 @@
  */
 export const aiConfig = {
     /** API Key - 本地开发在此填写，部署到 Vercel 后改为环境变量 */
-    apiKey: 'sk-c5zserp76zcu99qdscm5a48zkx7b94ufe2y2mdd0ztaejnp9',
+    apiKey: process.env.API_KEY || '',
 
     /** API 端点（开发环境使用代理路径，部署时改为完整 URL） */
     apiEndpoint: '/api/mimo/v1/chat/completions',
