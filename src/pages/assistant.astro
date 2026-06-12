@@ -345,7 +345,7 @@ const contentIndex = [
       try {
         const res = await fetch(apiEndpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'api-key': apiKey },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: currentModel,
             messages,
@@ -451,9 +451,9 @@ const contentIndex = [
         card.querySelectorAll('.tts-voice-btn').forEach(b=>b.disabled=true);
         card.querySelector('.tts-style-input').disabled=true;
 
-        fetch('/api/mimo/v1/chat/completions',{
+        fetch('/api/chat',{
           method:'POST',
-          headers:{'Content-Type':'application/json','api-key':apiKey},
+          headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
             model:'mimo-v2.5-tts',
             messages:[{role:'user',content:style},{role:'assistant',content:readText}],
@@ -509,7 +509,7 @@ const contentIndex = [
       try{
         const res=await fetch(apiEndpoint,{
           method:'POST',
-          headers:{'Content-Type':'application/json','api-key':apiKey},
+          headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
             model:model,
             messages:[

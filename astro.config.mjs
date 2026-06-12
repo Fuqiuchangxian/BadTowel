@@ -8,10 +8,10 @@ export default defineConfig({
   vite: {
     server: {
       proxy: {
-        '/api/mimo': {
+        '/api/chat': {
           target: 'https://api.xiaomimimo.com',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/mimo/, ''),
+          rewrite: (path) => '/v1/chat/completions',
         },
       },
     },

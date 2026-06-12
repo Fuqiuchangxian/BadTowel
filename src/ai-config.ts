@@ -3,11 +3,11 @@
  * 部署时请将 API_KEY 替换为你的真实 Key
  */
 export const aiConfig = {
-    /** API Key - 本地开发在此填写，部署到 Vercel 后改为环境变量 */
-    apiKey: process.env.API_KEY || '',
+    /** API Key - 本地开发使用，生产环境由 Serverless Function 从环境变量读取 */
+    apiKey: 'sk-c5zserp76zcu99qdscm5a48zkx7b94ufe2y2mdd0ztaejnp9',
 
-    /** API 端点（开发环境使用代理路径，部署时改为完整 URL） */
-    apiEndpoint: '/api/mimo/v1/chat/completions',
+    /** API 端点（本地开发用 Vite 代理，生产用 Vercel Serverless Function） */
+    apiEndpoint: '/api/chat',
 
     /** 普通对话模型（快速响应） */
     model: 'mimo-v2-flash',

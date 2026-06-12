@@ -204,7 +204,7 @@ const currentPath = Astro.url.pathname;
       function ttsSpeak(text,btn){
         btn.innerHTML='<span class="tts-loading"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>';
         btn.disabled=true;
-        fetch('/api/mimo/v1/chat/completions',{
+        fetch('/api/chat',{
           method:'POST',
           headers:{'Content-Type':'application/json','api-key':'sk-c5zserp76zcu99qdscm5a48zkx7b94ufe2y2mdd0ztaejnp9'},
           body:JSON.stringify({
