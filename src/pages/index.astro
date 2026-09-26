@@ -1,59 +1,274 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { siteConfig } from '../config';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import SectionHead from '../components/SectionHead.astro';
+import ExperienceItem from '../components/ExperienceItem.astro';
+import LinkCard from '../components/LinkCard.astro';
+import BiliEmbed from '../components/BiliEmbed.astro';
+import Manifesto from '../components/Manifesto.astro';
+import MeDesktop from '../components/MeDesktop.astro';
+import {
+  about,
+  contacts,
+  experience,
+  projects,
+  thinking,
+  experiments,
+  me,
+} from '../data/site';
 ---
 
-<BaseLayout title="首页" transparentNav={true} isHome={true}>
-  <div class="relative w-full h-screen overflow-hidden bg-gray-900">
-    <!-- Background image -->
-    <img
-      src={siteConfig.heroImage}
-      alt="hero"
-      class="absolute inset-0 w-full h-full object-cover"
-      onerror="this.remove()"
-    />
-    <!-- Fallback gradient if no image -->
-    <div class="absolute inset-0 bg-gradient-to-b from-[#1a2e4a] via-[#2a4a6b] to-[#3a5a7b] -z-10"></div>
-    <!-- Slight darkening for text legibility -->
-    <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/10"></div>
+<Base>
+  <Hero />
 
-    <!-- Typewriter text - no card, just text -->
-    <div
-      class="absolute left-12 top-[35%]"
-      style="font-size:2.5rem; font-family:'Noto Serif SC',serif; color:#fff; letter-spacing:2px; text-shadow:0 2px 30px rgba(0,0,0,0.25); white-space:nowrap;"
-    >
-      <span id="typewriter-text"></span><span class="ml-0.5 font-thin" style="animation:blink 1s infinite;">|</span>
+  <!-- 01 ABOUT -->
+  <section id="about" class="section tone-sky">
+    <div class="wrap">
+      <SectionHead no="01" en="ABOUT" zh="我是谁" />
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <p class="greet">{about.greeting}</p>
+          {about.body.map((p) => <p class="muted">{p}</p>)}
+          <p class="contact-label">你可以在这些地方联系到我：</p>
+          <div class="contacts">
+            {
+              contacts.map((c) =>
+                c.href ? (
+                  <a
+                    class="btn"
+                    href={c.href}
+                    {...(/^http|\.pdf$/.test(c.href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  >
+                    {c.label}
+                  </a>
+                ) : (
+                  <span class="btn" aria-disabled="true">
+                    {c.label} <small>即将更新</small>
+                  </span>
+                ),
+              )
+            }
+          </div>
+        </div>
+        <ol class="pillars">
+          {
+            about.pillars.map((p, i) => (
+              <li class="reveal" style={`--d:${i * 90}ms`}>
+                <span class="p-no mono">0{i + 1}</span>
+                <h3 class:list={[i === 2 ? 'g-grass' : 'g-sky']}>{p.k}</h3>
+                <p>{p.v}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
     </div>
+  </section>
 
-    <!-- Footer on home -->
-    <div class="absolute bottom-6 left-0 right-0 text-center" style="font-size:.75rem;color:rgba(255,255,255,.35);font-family:'Noto Sans SC',sans-serif;letter-spacing:.5px;">
-      © 2026 BadTowel
+  <!-- 02 EXPERIENCE -->
+  <section id="experience" class="section alt tone-sky">
+    <div class="wrap">
+      <SectionHead no="02" en="EXPERIENCE" zh="我做过什么" lead="这一部分整理一些工作内容。" />
+      <div>
+        {experience.map((item) => <ExperienceItem item={item} />)}
+      </div>
     </div>
-  </div>
+  </section>
 
-  <script define:vars={{ sentences: siteConfig.heroSentences }}>
-    const el = document.getElementById('typewriter-text');
-    if (el) {
-      let sIdx = 0, cIdx = 0, deleting = false;
-      function tick() {
-        const s = sentences[sIdx];
-        if (!deleting && cIdx < s.length) {
-          cIdx++;
-          el.textContent = s.slice(0, cIdx);
-          setTimeout(tick, 110);
-        } else if (!deleting && cIdx === s.length) {
-          setTimeout(() => { deleting = true; tick(); }, 2800);
-        } else if (deleting && cIdx > 0) {
-          cIdx--;
-          el.textContent = s.slice(0, cIdx);
-          setTimeout(tick, 50);
-        } else {
-          deleting = false;
-          sIdx = (sIdx + 1) % sentences.length;
-          setTimeout(tick, 500);
+  <!-- 03 PROJECTS -->
+  <section id="projects" class="section tone-sky">
+    <div class="wrap">
+      <SectionHead no="03" en="PROJECTS" zh="我的项目" lead="研究与竞赛：理解人如何被内容影响。" />
+      <div class="projects">
+        {
+          projects.map((p, i) => (
+            <article class:list={['project', 'reveal', { muted: p.muted }]} style={`--d:${(i % 2) * 90}ms`}>
+              <span class="chip">
+                <span class="dot" />
+                {p.tag}
+              </span>
+              <h3>{p.title}</h3>
+              <p>{p.text}</p>
+            </article>
+          ))
         }
-      }
-      tick();
-    }
-  </script>
-</BaseLayout>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 THINKING -->
+  <section id="thinking" class="section alt tone-sky">
+    <div class="wrap">
+      <SectionHead no="04" en="THINKING" zh="我怎么思考" />
+      <div class="thinking">
+        <p class="big reveal">
+          {thinking.lead}
+          <span class="muted">{thinking.aside}</span>
+        </p>
+        <div class="think-cards">
+          <div class="think-card reveal">
+            <span class="chip live"><span class="dot" />Blog · Building</span>
+            <h3>博客</h3>
+            <p class="muted">{thinking.blogStatus}</p>
+            {
+              thinking.blogHref && (
+                <a class="link ext" href={thinking.blogHref} target="_blank" rel="noopener noreferrer">
+                  前往博客
+                </a>
+              )
+            }
+          </div>
+          <a
+            class="think-card wiki reveal"
+            style="--d:90ms"
+            href={thinking.wiki.href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="chip"><span class="dot" />Knowledge · 人工维护</span>
+            <h3>{thinking.wiki.label}</h3>
+            <p class="muted">{thinking.wiki.text}</p>
+            <span class="link ext">飞书知识库 · 首页</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 EXPERIMENTS -->
+  <section id="experiments" class="section tone-grass">
+    <div class="wrap">
+      <SectionHead no="05" en="EXPERIMENTS" zh="我做过的东西" lead={experiments.intro} />
+      <div class="works">
+        {experiments.works.map((w, i) => <LinkCard work={w} index={i} />)}
+      </div>
+
+      <div class="music">
+        <div class="music-head reveal">
+          <span class="chip"><span class="dot" />Original Songs · Bilibili</span>
+          <h3>{experiments.music.title}</h3>
+          <p class="muted">{experiments.music.text}</p>
+        </div>
+        <div class="videos">
+          {
+            experiments.music.videos.map((v, i) => (
+              <div class="reveal" style={`--d:${i * 90}ms`}>
+                <BiliEmbed bvid={v} />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Manifesto />
+
+  <!-- 06 ABOUT ME -->
+  <section id="me" class="section alt tone-grass">
+    <div class="wrap">
+      <SectionHead no="06" en="ABOUT ME" zh="我这个人" lead={me.intro} />
+      <MeDesktop />
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* About */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: clamp(40px, 7vw, 96px);
+    align-items: start;
+  }
+  .greet { font-size: clamp(26px, 3vw, 34px); font-weight: 600; letter-spacing: -0.02em; margin-bottom: 20px; }
+  .about-text .muted { font-size: 19px; }
+  .contact-label { margin-top: 36px; margin-bottom: 14px; font-size: 15px; color: var(--ink-2); }
+  .contacts { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .pillars { list-style: none; margin: 0; padding: 0; }
+  .pillars li {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    column-gap: 12px;
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+  }
+  .pillars li:last-child { border-bottom: 1px solid var(--line); }
+  .p-no { grid-row: span 2; color: var(--ink-3); padding-top: 6px; }
+  .pillars h3 { font-size: 24px; margin-bottom: 6px; width: fit-content; }
+  .pillars p { color: var(--ink-2); font-size: 15px; }
+  .g-sky, .g-grass { -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .g-sky { background-image: linear-gradient(100deg, var(--ink) 30%, var(--sky-2)); }
+  .g-grass { background-image: linear-gradient(100deg, var(--ink) 30%, var(--grass-2)); }
+
+  /* Projects */
+  .projects { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .project {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 32px;
+    border-radius: var(--radius);
+    background: var(--bg-alt);
+  }
+  .project h3 { font-size: 24px; }
+  .project p { color: var(--ink-2); font-size: 15.5px; }
+  .project.muted { background: transparent; border: 1px dashed var(--line); }
+  .project.muted h3 { color: var(--ink-3); }
+  .project .chip { align-self: flex-start; background: var(--bg); }
+
+  /* Thinking */
+  .thinking .big {
+    font-size: clamp(26px, 3.4vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    max-width: 22em;
+    margin-bottom: 56px;
+  }
+  .thinking .big .muted { display: block; margin-top: 10px; font-size: 0.6em; font-weight: 500; text-indent: -0.5em; }
+  .think-cards { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; }
+  .think-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 32px;
+    border-radius: var(--radius);
+    background: var(--bg);
+    border: 1px solid var(--line-soft);
+  }
+  .think-card h3 { font-size: 24px; }
+  .think-card .muted { font-size: 15.5px; flex: 1; }
+  .wiki { transition: border-color 0.3s var(--ease), transform 0.5s var(--ease); }
+  .wiki:hover { border-color: var(--line); transform: translateY(-3px); }
+
+  /* Experiments */
+  /* 6 列网格：精选卡 4×2，旁边 2 张各占 2 列，其余每行 2 张各占 3 列 */
+  .works { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .works > :global(*) { grid-column: span 2; }
+  .works > :global(:nth-child(n + 4)) { grid-column: span 3; }
+  .works :global(.featured) { grid-column: span 4; grid-row: span 2; min-height: 380px; }
+  .music {
+    margin-top: clamp(80px, 11vw, 128px);
+    padding-top: clamp(48px, 6vw, 72px);
+    border-top: 1px solid var(--line);
+  }
+  .music-head { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 36px; }
+  .music-head h3 { font-size: clamp(28px, 3.4vw, 40px); letter-spacing: -0.02em; }
+  .videos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  @media (max-width: 1023px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .works { grid-template-columns: 1fr 1fr; }
+    .works > :global(*), .works > :global(:nth-child(n + 4)) { grid-column: auto; }
+    .works :global(.featured) { grid-column: span 2; grid-row: auto; min-height: 320px; }
+    .videos { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 734px) {
+    .projects, .think-cards, .works, .videos { grid-template-columns: 1fr; }
+    .works :global(.featured) { grid-column: auto; min-height: 280px; }
+    .project, .think-card { padding: 26px; }
+  }
+</style>

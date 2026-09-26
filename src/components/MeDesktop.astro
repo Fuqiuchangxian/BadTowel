@@ -1,0 +1,1125 @@
+---
+// 06 ABOUT ME：一台装着「我」的小电脑。
+// 侧栏 / Dock 切换 App，红绿灯可以关掉、收起、放大窗口。
+import { me, contacts, profile } from '../data/site';
+
+const icons: Record<string, string> = {
+  music: '<path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+  books: '<path d="M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2z"/><path d="M22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/>',
+  work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
+  feed: '<path d="M4 6h16M4 12h16M4 18h10"/>',
+  now: '<path d="M5 8l4 4-4 4M12 16h7"/>',
+};
+
+const like = (id: string) => me.likes.find((l) => l.id === id)!;
+const apps = [
+  { id: 'music', label: like('music').k, title: 'Music — 听音乐' },
+  { id: 'books', label: like('books').k, title: 'Books — 看书' },
+  { id: 'work', label: like('work').k, title: 'Work — 工作' },
+  { id: 'feed', label: like('feed').k, title: 'Feed — 刷资讯' },
+  { id: 'now', label: '我在做什么', title: 'Terminal — junhao@lab: ~/now' },
+];
+
+const link = (label: string) => contacts.find((c) => c.label === label)?.href ?? '';
+const payload = {
+  music: me.music,
+  genres: me.bookGenres,
+  work: me.work,
+  feed: me.feed,
+  doing: me.doing,
+  tags: profile.tags,
+  manifesto: profile.manifesto.join(''),
+  nameZh: profile.nameZh,
+  nameEn: profile.nameEn,
+  email: link('Email').replace('mailto:', ''),
+  github: link('GitHub'),
+  linkedin: link('LinkedIn'),
+  resume: link('Resume'),
+};
+
+// 书架初始的几本书：高度、宽度、配色按序号错开
+const tones = ['dark', 'light', 'mid', 'sky', 'white', 'dark', 'grass', 'light', 'mid'];
+const shelf = tones.map((tone, i) => ({
+  tone,
+  genre: me.bookGenres[i % me.bookGenres.length],
+  h: 128 + ((i * 37) % 48),
+  w: 30 + ((i * 13) % 14),
+}));
+---
+
+<div class="desk reveal" data-desk>
+  <script type="application/json" is:inline data-me-data set:html={JSON.stringify(payload)}></script>
+
+  <div class="menubar">
+    <span class="logo" aria-hidden="true"></span>
+    <b>JUNHAO / LAB</b>
+    <span class="menus" aria-hidden="true"><span>文件</span><span>编辑</span><span>显示</span><span>窗口</span><span>帮助</span></span>
+    <span class="mb-right"><span class="mb-name">{profile.nameZh}</span><span data-clock>--:--</span></span>
+  </div>
+
+  <div class="stage">
+    <div class="win" data-win>
+      <div class="titlebar">
+        <div class="lights">
+          <button class="l r" data-act="close" aria-label="关闭窗口"></button>
+          <button class="l y" data-act="min" aria-label="最小化窗口"></button>
+          <button class="l g" data-act="max" aria-label="放大窗口"></button>
+        </div>
+        <p class="wtitle" data-title>{apps[0].title}</p>
+      </div>
+
+      <div class="wbody">
+        <nav class="side" role="tablist" aria-label="我这个人">
+          <p class="side-h">我喜欢什么</p>
+          {
+            apps.map((a, i) => (
+              <>
+                {a.id === 'now' && <p class="side-h">我在做什么</p>}
+                <button
+                  class:list={['side-btn', { on: i === 0 }]}
+                  role="tab"
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                  aria-controls={`pane-${a.id}`}
+                  data-open={a.id}
+                >
+                  <span class={`ico ico-${a.id}`} aria-hidden="true">
+                    <svg viewBox="0 0 24 24" set:html={icons[a.id]} />
+                  </span>
+                  {a.id === 'now' ? 'Terminal' : a.label}
+                </button>
+              </>
+            ))
+          }
+        </nav>
+
+        <div class="panes">
+          <!-- 听音乐 -->
+          <section class="pane" id="pane-music" role="tabpanel" data-pane="music" data-title={apps[0].title}>
+            <div class="pane-head">
+              <h3>{like('music').k}</h3>
+              <p>{like('music').v}</p>
+            </div>
+            <div class="music-ui" data-music>
+              <div class="art">
+                <div class="vinyl"><span></span></div>
+              </div>
+              <div class="np">
+                <p class="np-k">NOW PLAYING</p>
+                <p class="np-t" data-np>{me.music[0]}</p>
+                <p class="np-sub">静音播放中 · 请在脑内自行播放</p>
+                <div class="track"><span class="bar" data-bar></span></div>
+                <div class="controls">
+                  <button class="c" data-m="prev" aria-label="上一首">
+                    <svg viewBox="0 0 24 24"><path d="M19 5L9 12l10 7zM6 5v14" /></svg>
+                  </button>
+                  <button class="c play" data-m="play" aria-label="播放">
+                    <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" /></svg>
+                    <svg class="i-pause" viewBox="0 0 24 24"><path d="M7 4h4v16H7zM14 4h4v16h-4z" /></svg>
+                  </button>
+                  <button class="c" data-m="next" aria-label="下一首">
+                    <svg viewBox="0 0 24 24"><path d="M5 5l10 7-10 7zM18 5v14" /></svg>
+                  </button>
+                  <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                </div>
+              </div>
+              <ol class="playlist">
+                {
+                  me.music.map((a, i) => (
+                    <li>
+                      <button class:list={['song', { on: i === 0 }]} data-song={i}>
+                        <span class="no">{String(i + 1).padStart(2, '0')}</span>
+                        {a}
+                      </button>
+                    </li>
+                  ))
+                }
+                <li class="song more">……还有很多</li>
+              </ol>
+            </div>
+          </section>
+
+          <!-- 看书 -->
+          <section class="pane" id="pane-books" role="tabpanel" data-pane="books" data-title={apps[1].title} hidden>
+            <div class="pane-head">
+              <h3>{like('books').k}</h3>
+              <p>{like('books').v}</p>
+            </div>
+            <div class="shelf" data-shelf>
+              {
+                shelf.map((b) => (
+                  <span class={`book b-${b.tone}`} style={`--h:${b.h}px;--w:${b.w}px`}>
+                    {b.genre}
+                  </span>
+                ))
+              }
+            </div>
+            <div class="heat">
+              <div class="heat-top">
+                <span>三分钟热度</span>
+                <span class="heat-time" data-heat-time>03:00</span>
+              </div>
+              <div class="track"><span class="bar" data-heat-bar></span></div>
+              <div class="heat-foot">
+                <p>累计 <b data-books>{shelf.length}</b> 次三分钟 · 积攒起来也不算少</p>
+                <button class="btn solid sm" data-read>再热三分钟</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 工作 -->
+          <section class="pane" id="pane-work" role="tabpanel" data-pane="work" data-title={apps[2].title} hidden>
+            <div class="pane-head">
+              <h3>{like('work').k}</h3>
+              <p>{like('work').v}</p>
+            </div>
+            <div class="meter">
+              <div class="meter-top">
+                <span>成就感</span>
+                <span class="meter-state" data-meter-state>有点需要反馈……</span>
+                <span class="meter-pct" data-meter-pct>20%</span>
+              </div>
+              <div class="track fat"><span class="bar grass" data-meter-bar style="width:20%"></span></div>
+              <button class="btn solid sm" data-feedback>给我一点反馈</button>
+            </div>
+            <ul class="notes" data-notes aria-live="polite"></ul>
+          </section>
+
+          <!-- 刷资讯 -->
+          <section class="pane" id="pane-feed" role="tabpanel" data-pane="feed" data-title={apps[3].title} hidden>
+            <div class="pane-head">
+              <h3>{like('feed').k}</h3>
+              <p>{like('feed').v}</p>
+            </div>
+            <div class="feed-bar">
+              <button class="btn solid sm" data-predict>predict 一个 chunk</button>
+              <span class="chunks">已收藏 chunk：<b data-chunks>0</b></span>
+            </div>
+            <ul class="feed" data-feed></ul>
+          </section>
+
+          <!-- 我在做什么 -->
+          <section class="pane" id="pane-now" role="tabpanel" data-pane="now" data-title={apps[4].title} hidden>
+            <div class="term" data-term>
+              <div class="term-out" data-out></div>
+              <form class="term-in" data-form autocomplete="off">
+                <label for="term-input" class="prompt">junhao@lab ~ %</label>
+                <input id="term-input" data-input spellcheck="false" autocapitalize="off" aria-label="输入命令" />
+              </form>
+            </div>
+            <div class="term-chips">
+              <span>试试：</span>
+              <button data-cmd="now">now</button>
+              <button data-cmd="whoami">whoami</button>
+              <button data-cmd="sudo hire junhao">sudo hire junhao</button>
+              <button data-cmd="help">help</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="closed-hint" data-hint>
+      <p data-hint-text>窗口被你关掉了。</p>
+      <p class="hint-sub">点下面 Dock 里的任意一个 App，也能把它叫回来</p>
+      <button class="btn sm" data-reopen>重新打开</button>
+    </div>
+  </div>
+
+  <div class="dock" aria-label="Dock">
+    {
+      apps.map((a, i) => (
+        <button class:list={['dock-btn', { on: i === 0 }]} data-open={a.id} aria-label={`打开 ${a.label}`}>
+          <span class={`ico ico-${a.id}`} aria-hidden="true">
+            <svg viewBox="0 0 24 24" set:html={icons[a.id]} />
+          </span>
+          <span class="tip">{a.id === 'now' ? 'Terminal' : a.label}</span>
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  type Data = {
+    music: string[];
+    genres: string[];
+    work: { from: string; text: string }[];
+    feed: [string, string][];
+    doing: string[];
+    tags: string[];
+    manifesto: string;
+    nameZh: string;
+    nameEn: string;
+    email: string;
+    github: string;
+    linkedin: string;
+    resume: string;
+  };
+
+  const desk = document.querySelector<HTMLElement>('[data-desk]');
+  if (desk) init(desk);
+
+  function init(desk: HTMLElement) {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => desk.querySelector<T>(s)!;
+    const $$ = <T extends HTMLElement = HTMLElement>(s: string) => [...desk.querySelectorAll<T>(s)];
+    const data: Data = JSON.parse($('[data-me-data]').textContent || '{}');
+    const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+
+    /* ── 窗口 & 切换 App ─────────────────────────── */
+    let current = 'music';
+    const openers = $$('[data-open]');
+    const panes = $$('[data-pane]');
+    const title = $('[data-title]');
+
+    function open(id: string) {
+      current = id;
+      desk.classList.remove('closed');
+      panes.forEach((p) => (p.hidden = p.dataset.pane !== id));
+      openers.forEach((b) => {
+        const on = b.dataset.open === id;
+        b.classList.toggle('on', on);
+        if (b.getAttribute('role') === 'tab') b.setAttribute('aria-selected', String(on));
+      });
+      title.textContent = panes.find((p) => p.dataset.pane === id)?.dataset.title ?? '';
+      if (id === 'now') bootTerminal();
+    }
+
+    openers.forEach((b) =>
+      b.addEventListener('click', () => {
+        if (b.classList.contains('dock-btn')) {
+          b.classList.remove('bounce');
+          void b.offsetWidth;
+          b.classList.add('bounce');
+        }
+        open(b.dataset.open!);
+      }),
+    );
+
+    $$('[data-act]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const act = b.dataset.act;
+        if (act === 'max') return desk.classList.toggle('max');
+        $('[data-hint-text]').textContent =
+          act === 'close' ? '窗口被你关掉了。' : '窗口收进 Dock 里了。';
+        desk.classList.add('closed');
+        desk.classList.toggle('minned', act === 'min');
+        openers.forEach((o) => o.classList.remove('on'));
+        setPlaying(false);
+      }),
+    );
+    $('[data-reopen]').addEventListener('click', () => open(current));
+
+    /* ── 菜单栏时钟 ─────────────────────────────── */
+    const clock = $('[data-clock]');
+    const tick = () => {
+      const d = new Date();
+      const w = '日一二三四五六'[d.getDay()];
+      clock.textContent = `周${w} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    };
+    tick();
+    setInterval(tick, 15000);
+
+    /* ── Music ─────────────────────────────────── */
+    const musicUi = $('[data-music]');
+    const np = $('[data-np]');
+    const songs = $$('[data-song]');
+    const bar = $('[data-bar]');
+    let track = 0;
+    let playing = false;
+
+    function setPlaying(v: boolean) {
+      playing = v;
+      musicUi.classList.toggle('playing', v);
+      $('[data-m="play"]').setAttribute('aria-label', v ? '暂停' : '播放');
+    }
+    function setTrack(i: number) {
+      track = (i + data.music.length) % data.music.length;
+      np.textContent = data.music[track];
+      songs.forEach((s, j) => s.classList.toggle('on', j === track));
+      bar.classList.remove('run');
+      void bar.offsetWidth;
+      bar.classList.add('run');
+    }
+    $('[data-m="play"]').addEventListener('click', () => {
+      if (!bar.classList.contains('run')) bar.classList.add('run');
+      setPlaying(!playing);
+    });
+    $('[data-m="prev"]').addEventListener('click', () => (setTrack(track - 1), setPlaying(true)));
+    $('[data-m="next"]').addEventListener('click', () => (setTrack(track + 1), setPlaying(true)));
+    songs.forEach((s, i) => s.addEventListener('click', () => (setTrack(i), setPlaying(true))));
+    bar.addEventListener('animationend', () => setTrack(track + 1));
+
+    /* ── Books ─────────────────────────────────── */
+    const shelf = $('[data-shelf]');
+    const readBtn = $<HTMLButtonElement>('[data-read]');
+    const heatBar = $('[data-heat-bar]');
+    const heatTime = $('[data-heat-time]');
+    const booksCount = $('[data-books]');
+    const tones = ['dark', 'light', 'mid', 'sky', 'white', 'grass'];
+    let books = shelf.children.length;
+    const MAX_BOOKS = 22;
+
+    readBtn.addEventListener('click', () => {
+      if (readBtn.disabled) return;
+      readBtn.disabled = true;
+      readBtn.textContent = '热度燃烧中…';
+      const start = performance.now();
+      const DURATION = 1800; // 把三分钟压缩成 1.8 秒
+      const timer = setInterval(() => {
+        const t = Math.min(1, (performance.now() - start) / DURATION);
+        const left = Math.round(180 * (1 - t));
+        heatTime.textContent = `0${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+        heatBar.style.width = `${t * 100}%`;
+        if (t < 1) return;
+        clearInterval(timer);
+        addBook();
+        setTimeout(() => {
+          heatBar.style.width = '0%';
+          heatTime.textContent = '03:00';
+          if (books >= MAX_BOOKS) {
+            readBtn.textContent = '书架放不下了，但热度还在';
+          } else {
+            readBtn.disabled = false;
+            readBtn.textContent = '再热三分钟';
+          }
+        }, 500);
+      }, 30);
+    });
+
+    function addBook() {
+      const b = document.createElement('span');
+      b.className = `book b-${pick(tones)} new`;
+      b.style.setProperty('--h', `${124 + Math.floor(Math.random() * 52)}px`);
+      b.style.setProperty('--w', `${28 + Math.floor(Math.random() * 16)}px`);
+      b.textContent = pick(data.genres);
+      shelf.appendChild(b);
+      shelf.scrollTo({ left: shelf.scrollWidth, behavior: 'smooth' });
+      books += 1;
+      booksCount.textContent = String(books);
+    }
+
+    /* ── Work ──────────────────────────────────── */
+    const notes = $('[data-notes]');
+    const meterBar = $('[data-meter-bar]');
+    const meterPct = $('[data-meter-pct]');
+    const meterState = $('[data-meter-state]');
+    let meter = 20;
+    let noteIdx = 0;
+
+    function renderMeter() {
+      meterBar.style.width = `${meter}%`;
+      meterPct.textContent = `${Math.round(meter)}%`;
+      meterState.textContent =
+        meter >= 100 ? '成就感拉满，继续热爱这份工作' : meter >= 60 ? '状态不错' : meter >= 30 ? '还可以再来一点' : '有点需要反馈……';
+    }
+    $('[data-feedback]').addEventListener('click', () => {
+      meter = Math.min(100, meter + 20);
+      renderMeter();
+      notify();
+    });
+    function notify() {
+      const n = data.work[noteIdx++ % data.work.length];
+      const li = document.createElement('li');
+      const ico = document.createElement('span');
+      ico.className = 'n-ico';
+      const body = document.createElement('div');
+      const head = document.createElement('p');
+      head.className = 'n-head';
+      const from = document.createElement('b');
+      from.textContent = n.from;
+      const when = document.createElement('span');
+      when.textContent = '现在';
+      head.append(from, when);
+      const text = document.createElement('p');
+      text.textContent = n.text;
+      body.append(head, text);
+      li.append(ico, body);
+      notes.prepend(li);
+      while (notes.children.length > 3) notes.lastElementChild!.remove();
+    }
+    notify();
+    // 成就感会慢慢消退，所以需要持续的反馈
+    setInterval(() => {
+      if (current !== 'work' || desk.classList.contains('closed') || meter <= 0) return;
+      meter = Math.max(0, meter - 1);
+      renderMeter();
+    }, 700);
+
+    /* ── Feed ──────────────────────────────────── */
+    const feed = $('[data-feed]');
+    const chunks = $('[data-chunks]');
+    let fed = 0;
+    let saved = 0;
+    let predicting = false;
+
+    function more(n: number) {
+      for (let i = 0; i < n; i++) {
+        const [tag, text] = data.feed[fed % data.feed.length];
+        fed += 1;
+        const li = document.createElement('li');
+        const t = document.createElement('span');
+        t.className = 'f-tag';
+        t.textContent = `#${tag}`;
+        const p = document.createElement('p');
+        p.textContent = text;
+        const m = document.createElement('span');
+        m.className = 'f-meta';
+        m.textContent = `刷到的第 ${fed} 条`;
+        li.append(t, p, m);
+        feed.appendChild(li);
+      }
+    }
+    more(8);
+    feed.addEventListener('scroll', () => {
+      if (feed.scrollTop + feed.clientHeight > feed.scrollHeight - 60) more(6);
+    });
+
+    $('[data-predict]').addEventListener('click', () => {
+      if (predicting) return;
+      const items = [...feed.children].filter((el) => !el.classList.contains('hit')) as HTMLElement[];
+      const visible = items.filter(
+        (el) => el.offsetTop + el.offsetHeight > feed.scrollTop && el.offsetTop < feed.scrollTop + feed.clientHeight,
+      );
+      const pool = visible.length ? visible : items;
+      if (!pool.length) return;
+      predicting = true;
+      let steps = 0;
+      const total = 12 + Math.floor(Math.random() * 6);
+      let last: HTMLElement | null = null;
+      const spin = () => {
+        last?.classList.remove('scan');
+        last = pool[steps % pool.length];
+        last.classList.add('scan');
+        steps += 1;
+        if (steps < total) return setTimeout(spin, 45 + steps * 6);
+        last.classList.remove('scan');
+        last.classList.add('hit');
+        const badge = document.createElement('span');
+        badge.className = 'f-hit';
+        badge.textContent = `★ 可能有用 · p=${(0.72 + Math.random() * 0.26).toFixed(2)}`;
+        last.appendChild(badge);
+        saved += 1;
+        chunks.textContent = String(saved);
+        predicting = false;
+      };
+      spin();
+    });
+
+    /* ── Terminal ──────────────────────────────── */
+    const out = $('[data-out]');
+    const form = $<HTMLFormElement>('[data-form]');
+    const input = $<HTMLInputElement>('[data-input]');
+    const history: string[] = [];
+    let hIdx = 0;
+    let booted = false;
+
+    type Line = string | { text: string; href: string };
+    function print(lines: Line[], cls = '') {
+      for (const l of lines) {
+        const div = document.createElement('div');
+        div.className = `ln ${cls}`;
+        if (typeof l === 'string') div.textContent = l;
+        else {
+          const a = document.createElement('a');
+          a.textContent = l.text;
+          a.href = l.href;
+          if (l.href.startsWith('http')) {
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+          }
+          div.appendChild(a);
+        }
+        out.appendChild(div);
+      }
+      out.scrollTop = out.scrollHeight;
+    }
+
+    const contactLines = (): Line[] => [
+      { text: `✉ ${data.email}`, href: `mailto:${data.email}` },
+      { text: '⌥ GitHub', href: data.github },
+      { text: 'in LinkedIn', href: data.linkedin },
+    ];
+    const apps = ['music', 'books', 'work', 'feed'];
+
+    function run(raw: string) {
+      const cmd = raw.trim();
+      print([`junhao@lab ~ % ${cmd}`], 'cmd');
+      if (cmd) {
+        history.push(cmd);
+        hIdx = history.length;
+      }
+      const lower = cmd.toLowerCase();
+      const [head, arg] = lower.split(/\s+/);
+      if (!cmd) return;
+      if (lower === 'clear') {
+        out.textContent = '';
+        return;
+      }
+      if (lower === 'help') {
+        return print(
+          [
+            'now               我在做什么',
+            'whoami            我是谁',
+            'likes             我喜欢什么',
+            'open <app>        打开 music / books / work / feed',
+            'contact           怎么找到我',
+            'sudo hire junhao  （推荐）',
+            'clear             清屏',
+          ],
+          'dim',
+        );
+      }
+      if (lower === 'now' || lower === 'cat now.txt') {
+        return print([...data.doing.map((d) => `▸ ${d}`), '（持续更新中）']);
+      }
+      if (lower === 'whoami') return print([`${data.nameZh} ${data.nameEn}`, data.tags.join(' · '), data.manifesto]);
+      if (lower === 'likes') return print(['听音乐 / 看书 / 工作 / 刷资讯', '输入 open music 试试'], 'dim');
+      if (lower === 'ls') return print(['music/  books/  work/  feed/  now.txt']);
+      if (lower === 'contact') return print(contactLines());
+      if (lower === 'hire' || lower === 'sudo hire junhao' || lower === 'sudo hire') {
+        return print([
+          '[sudo] password for recruiter: ********',
+          '✓ 权限已授予。很高兴认识你。',
+          { text: '→ 打开简历 resume.pdf', href: data.resume },
+          ...contactLines(),
+        ]);
+      }
+      if (head === 'sudo') return print(['junhao is not in the sudoers file.', '不过你可以试试 sudo hire junhao'], 'dim');
+      const target = head === 'open' || head === 'cd' ? arg?.replace(/\/$/, '') : head;
+      if (target && apps.includes(target)) {
+        print([`正在打开 ${target}…`], 'dim');
+        setTimeout(() => open(target), 450);
+        return;
+      }
+      print([`zsh: command not found: ${cmd}`, '输入 help 看看有哪些命令'], 'dim');
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      run(input.value);
+      input.value = '';
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp' && hIdx > 0) input.value = history[--hIdx];
+      else if (e.key === 'ArrowDown') input.value = history[++hIdx] ?? ((hIdx = history.length), '');
+      else return;
+      e.preventDefault();
+    });
+    $('[data-term]').addEventListener('click', () => {
+      if (!window.getSelection()?.toString()) input.focus({ preventScroll: true });
+    });
+    $$('[data-cmd]').forEach((b) => b.addEventListener('click', () => run(b.dataset.cmd!)));
+
+    // 第一次打开终端：自己敲一遍 now
+    function bootTerminal() {
+      if (booted) return;
+      booted = true;
+      print(['Last login: 今天 on ttys000', '输入 help 看看能做什么。'], 'dim');
+      const cmd = 'now';
+      let i = 0;
+      const type = () => {
+        input.value = cmd.slice(0, ++i);
+        if (i < cmd.length) return setTimeout(type, 140);
+        setTimeout(() => {
+          run(cmd);
+          input.value = '';
+        }, 260);
+      };
+      setTimeout(type, 500);
+    }
+  }
+</script>
+
+<style>
+  /* ── 桌面 ─────────────────────────────────── */
+  .desk {
+    position: relative;
+    border-radius: 28px;
+    padding: 0 0 22px;
+    overflow: hidden;
+    border: 1px solid var(--line-soft);
+    background:
+      radial-gradient(90% 80% at 0% 0%, rgba(90, 200, 250, 0.32), transparent 60%),
+      radial-gradient(80% 70% at 100% 100%, rgba(168, 224, 99, 0.34), transparent 60%),
+      #fbfbfd;
+  }
+  .menubar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    height: 32px;
+    padding: 0 18px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  .logo { width: 10px; height: 10px; border-radius: 50%; background: var(--grad-lab); }
+  .menus { display: flex; gap: 18px; color: var(--ink-2); }
+  .mb-right { margin-left: auto; display: flex; gap: 16px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  .stage { position: relative; padding: 32px 32px 0; }
+
+  /* ── 窗口 ─────────────────────────────────── */
+  .win {
+    max-width: 880px;
+    margin: 0 auto;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.07), 0 24px 70px rgba(0, 0, 0, 0.13), 0 4px 14px rgba(0, 0, 0, 0.05);
+    transform-origin: 50% 120%;
+    transition: transform 0.55s var(--ease), opacity 0.4s var(--ease), max-width 0.55s var(--ease);
+  }
+  .max .win { max-width: 100%; }
+  .closed .win { transform: scale(0.6); opacity: 0; pointer-events: none; visibility: hidden; transition-property: transform, opacity, visibility; }
+  .minned .win { transform: translateY(60%) scale(0.08); }
+
+  .closed-hint {
+    position: absolute;
+    inset: 32px 32px 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    color: var(--ink-2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s var(--ease) 0.15s;
+  }
+  .closed .closed-hint { opacity: 1; pointer-events: auto; }
+  .closed-hint [data-hint-text] { font-size: 19px; font-weight: 600; color: var(--ink); }
+  .hint-sub { margin-top: -8px; font-size: 14px; }
+  .closed-hint :global(.btn.sm) { height: 34px; padding: 0 16px; font-size: 14px; }
+
+  .titlebar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 16px;
+    background: #f6f6f8;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .lights { position: relative; z-index: 1; display: flex; gap: 8px; }
+  .l {
+    position: relative;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+  }
+  .l.r { background: #ff5f57; }
+  .l.y { background: #febc2e; }
+  .l.g { background: #28c840; }
+  .l::after {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font: 700 10px/1 var(--font);
+    color: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+  }
+  .l.r::after { content: '×'; }
+  .l.y::after { content: '–'; }
+  .l.g::after { content: '+'; }
+  .lights:hover .l::after, .l:focus-visible::after { opacity: 1; }
+  .wtitle {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+
+  .wbody { display: grid; grid-template-columns: 188px 1fr; height: 560px; }
+  .max .wbody { height: 620px; }
+
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 10px;
+    background: #f9f9fb;
+    border-right: 1px solid var(--line-soft);
+  }
+  .side-h { margin: 10px 10px 4px; font-size: 11px; font-weight: 600; color: var(--ink-3); letter-spacing: 0.04em; }
+  .side-h:first-child { margin-top: 0; }
+  .side-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+  .side-btn:hover { background: rgba(0, 0, 0, 0.04); }
+  .side-btn.on { background: rgba(0, 0, 0, 0.07); font-weight: 600; }
+  .side-btn .ico { --s: 24px; }
+
+  .panes { position: relative; min-width: 0; }
+  .pane { height: 100%; padding: 28px 32px; overflow: auto; display: flex; flex-direction: column; gap: 22px; }
+  .pane[hidden] { display: none; }
+  .pane-head h3 { font-size: 26px; margin-bottom: 8px; }
+  .pane-head p { font-size: 15px; color: var(--ink-2); line-height: 1.7; max-width: 40em; }
+
+  /* ── App 图标 ─────────────────────────────── */
+  .ico {
+    --s: 48px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    border-radius: 23%;
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+  }
+  .ico svg { width: 56%; height: 56%; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ico-music { background: var(--grad-sky); }
+  .ico-books { background: var(--grad-grass); }
+  .ico-work { background: linear-gradient(160deg, #3a3a3c, #000); }
+  .ico-feed { background: #fff; }
+  .ico-feed svg { stroke: var(--sky-2); stroke-width: 2.4; }
+  .ico-now { background: #111; }
+  .ico-now svg { stroke: var(--grass-1); }
+
+  /* ── Dock ─────────────────────────────────── */
+  .dock {
+    display: flex;
+    gap: 10px;
+    width: fit-content;
+    margin: 26px auto 0;
+    padding: 8px 10px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+  .dock-btn {
+    position: relative;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.3s var(--ease);
+  }
+  .dock-btn:hover { transform: translateY(-8px) scale(1.14); }
+  .dock-btn::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 50%;
+    background: var(--ink);
+    opacity: 0;
+  }
+  .dock-btn.on::after { opacity: 0.7; }
+  .dock-btn.bounce { animation: bounce 0.6s var(--ease); }
+  .tip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(29, 29, 31, 0.86);
+    color: #fff;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .dock-btn:hover .tip { opacity: 1; }
+  @keyframes bounce { 30% { transform: translateY(-16px); } 60% { transform: translateY(0); } 80% { transform: translateY(-5px); } }
+
+  /* ── 共用：进度条 / 小按钮 ─────────────────── */
+  .track { height: 4px; border-radius: 4px; background: var(--line-soft); overflow: hidden; }
+  .track.fat { height: 10px; }
+  .bar { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--grad-lab); }
+  .bar.grass { background: var(--grad-grass); transition: width 0.5s var(--ease); }
+  .pane :global(.btn.sm) { height: 34px; padding: 0 16px; font-size: 14px; }
+  .pane :global(.btn[disabled]) { opacity: 0.5; cursor: default; }
+
+  /* ── Music ────────────────────────────────── */
+  .music-ui { display: grid; grid-template-columns: 180px 1fr; gap: 20px 28px; }
+  .art {
+    grid-row: span 2;
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 16px;
+    background: var(--grad-sky);
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(10, 132, 255, 0.25);
+  }
+  .vinyl {
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, #111 0 2px, #1c1c1e 2px 4px);
+    display: grid;
+    place-items: center;
+    animation: spin 4s linear infinite paused;
+  }
+  .vinyl span { width: 34%; aspect-ratio: 1; border-radius: 50%; background: var(--grad-grass); box-shadow: 0 0 0 3px #111; }
+  .vinyl span::after { content: ''; display: block; width: 14%; aspect-ratio: 1; margin: 43% auto 0; border-radius: 50%; background: #111; }
+  .playing .vinyl { animation-play-state: running; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .np { min-width: 0; }
+  .np-k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--ink-3); }
+  .np-t { margin-top: 2px; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .np-sub { font-size: 12.5px; color: var(--ink-3); margin-bottom: 14px; }
+  .np .bar.run { animation: progress 24s linear forwards paused; }
+  .playing .np .bar.run { animation-play-state: running; }
+  @keyframes progress { to { width: 100%; } }
+  .controls { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .c {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--bg-alt);
+    cursor: pointer;
+  }
+  .c svg { width: 15px; height: 15px; fill: var(--ink); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+  .c.play { width: 44px; height: 44px; background: var(--ink); }
+  .c.play svg { fill: #fff; stroke: #fff; }
+  .i-pause, .playing .i-play { display: none; }
+  .playing .i-pause { display: block; }
+  .eq { display: flex; align-items: flex-end; gap: 3px; height: 18px; margin-left: 8px; }
+  .eq i { width: 3px; height: 4px; border-radius: 2px; background: var(--grad-lab); }
+  .playing .eq i { animation: eq 0.9s ease-in-out infinite alternate; }
+  .eq i:nth-child(2) { animation-delay: -0.3s !important; }
+  .eq i:nth-child(3) { animation-delay: -0.6s !important; }
+  .eq i:nth-child(4) { animation-delay: -0.15s !important; }
+  @keyframes eq { 0% { height: 4px; } 100% { height: 18px; } }
+
+  .playlist { grid-column: 2; list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-soft); }
+  .song {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 7px 8px;
+    border: 0;
+    border-bottom: 1px solid var(--line-soft);
+    background: none;
+    font: inherit;
+    font-size: 14.5px;
+    text-align: left;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .song:hover { background: var(--bg-alt); }
+  .song.on { color: var(--sky-2); font-weight: 600; }
+  .song .no { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+  .song.more { color: var(--ink-3); cursor: default; border-bottom: 0; padding-left: 40px; }
+
+  /* ── Books ────────────────────────────────── */
+  .shelf {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    min-height: 196px;
+    padding: 0 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 10px solid #e8e8ed;
+    border-radius: 0 0 4px 4px;
+    scrollbar-width: none;
+  }
+  .shelf :global(.book) {
+    flex: none;
+    display: flex;
+    align-items: center;
+    width: var(--w);
+    height: var(--h);
+    padding: 12px 0;
+    border-radius: 3px 3px 1px 1px;
+    writing-mode: vertical-rl;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    box-shadow: inset -3px 0 0 rgba(0, 0, 0, 0.08), inset 3px 0 0 rgba(255, 255, 255, 0.12);
+    transition: transform 0.35s var(--ease);
+    cursor: default;
+  }
+  .shelf :global(.book:hover) { transform: translateY(-10px); }
+  .shelf :global(.b-dark) { background: #1d1d1f; color: #f5f5f7; }
+  .shelf :global(.b-mid) { background: #6e6e73; color: #fff; }
+  .shelf :global(.b-light) { background: #e8e8ed; color: var(--ink); }
+  .shelf :global(.b-white) { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .shelf :global(.b-sky) { background: var(--grad-sky); color: #fff; }
+  .shelf :global(.b-grass) { background: var(--grad-grass); color: #fff; }
+  .shelf :global(.book.new) { animation: drop 0.6s var(--ease); }
+  @keyframes drop { from { transform: translateY(-60px) rotate(-8deg); opacity: 0; } }
+
+  .heat { display: flex; flex-direction: column; gap: 10px; }
+  .heat-top, .meter-top { display: flex; align-items: baseline; gap: 12px; font-size: 14px; font-weight: 600; }
+  .heat-time { margin-left: auto; font-family: var(--mono); font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .heat .bar { background: linear-gradient(90deg, #febc2e, #ff5f57); }
+  .heat-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--ink-2); }
+  .heat-foot b { color: var(--ink); font-size: 18px; }
+
+  /* ── Work ─────────────────────────────────── */
+  .meter { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .meter .track, .meter-top { width: 100%; }
+  .meter-state { font-weight: 400; color: var(--ink-2); }
+  .meter-pct { margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .notes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .notes :global(li) {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--line-soft);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+    font-size: 14px;
+    animation: note-in 0.5s var(--ease);
+  }
+  .notes :global(.n-ico) { width: 34px; height: 34px; border-radius: 9px; background: var(--grad-grass); }
+  .notes :global(.n-head) { display: flex; justify-content: space-between; font-size: 13px; }
+  .notes :global(.n-head span) { color: var(--ink-3); font-size: 12px; }
+  @keyframes note-in { from { opacity: 0; transform: translateX(40px); } }
+
+  /* ── Feed ─────────────────────────────────── */
+  .feed-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--ink-2); }
+  .feed-bar b { color: var(--grass-2); font-size: 18px; }
+  .feed {
+    flex: 1;
+    min-height: 220px;
+    list-style: none;
+    margin: 0;
+    padding: 4px;
+    overflow-y: auto;
+    border-radius: 14px;
+    border: 1px solid var(--line-soft);
+    background: var(--bg-alt);
+  }
+  .feed :global(li) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14.5px;
+    transition: background 0.15s;
+  }
+  .feed :global(li + li) { margin-top: 2px; }
+  .feed :global(.f-tag) { font-family: var(--mono); font-size: 11px; color: var(--sky-2); }
+  .feed :global(.f-meta) { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
+  .feed :global(li.scan) { background: rgba(10, 132, 255, 0.1); }
+  .feed :global(li.hit) { background: #fff; box-shadow: inset 0 0 0 1.5px var(--grass-2); }
+  .feed :global(.f-hit) { grid-column: 2 / -1; font-size: 12px; font-weight: 600; color: var(--grass-2); }
+
+  /* ── Terminal ─────────────────────────────── */
+  .term {
+    flex: 1;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    background: #0d0d0f;
+    color: #e5e5ea;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.75;
+    cursor: text;
+  }
+  .term-out { flex: 1; overflow-y: auto; padding: 16px 18px 0; }
+  .term-out :global(.ln) { white-space: pre-wrap; word-break: break-word; }
+  .term-out :global(.cmd) { color: #fff; margin-top: 6px; }
+  .term-out :global(.dim) { color: #8e8e93; }
+  .term-out :global(a) { color: var(--sky-1); text-decoration: underline; text-underline-offset: 3px; }
+  .term-in { display: flex; gap: 8px; padding: 4px 18px 16px; }
+  .prompt { color: var(--grass-1); white-space: nowrap; }
+  .term-in input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    caret-color: var(--grass-1);
+  }
+  .term-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); }
+  .term-chips button {
+    padding: 4px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .term-chips button:hover { border-color: var(--ink); }
+
+  /* ── 响应式 ───────────────────────────────── */
+  @media (max-width: 1023px) {
+    .wbody { grid-template-columns: 160px 1fr; }
+    .music-ui { grid-template-columns: 150px 1fr; }
+  }
+  @media (max-width: 734px) {
+    .desk { border-radius: 22px; margin: 0 calc(var(--gutter) * -0.5); }
+    .menus, .mb-name { display: none; }
+    .stage { padding: 16px 10px 0; }
+    .closed-hint { inset: 16px 10px 0; }
+    .wbody, .max .wbody { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 600px; }
+    .side {
+      flex-direction: row;
+      gap: 4px;
+      padding: 8px;
+      overflow-x: auto;
+      border-right: 0;
+      border-bottom: 1px solid var(--line-soft);
+      scrollbar-width: none;
+    }
+    .side-h { display: none; }
+    .side-btn { width: auto; flex: none; white-space: nowrap; padding: 6px 10px; font-size: 13px; }
+    .side-btn .ico { --s: 20px; }
+    .pane { padding: 22px 18px; gap: 18px; }
+    .pane-head h3 { font-size: 22px; }
+    .pane-head p { font-size: 14px; }
+    .music-ui { grid-template-columns: 112px 1fr; gap: 16px; }
+    .art { grid-row: auto; }
+    .playlist { grid-column: 1 / -1; }
+    .np-t { font-size: 21px; }
+    .np-sub { margin-bottom: 8px; }
+    .eq { display: none; }
+    .feed :global(li) { grid-template-columns: auto 1fr; }
+    .feed :global(.f-meta) { display: none; }
+    .term-in input { font-size: 16px; } /* 防止 iOS 聚焦时自动放大 */
+    .dock { gap: 6px; margin-top: 18px; padding: 6px 8px; }
+    .dock .ico { --s: 40px; }
+    .tip { display: none; }
+  }
+</style>

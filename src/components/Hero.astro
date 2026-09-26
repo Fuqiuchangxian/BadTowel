@@ -1,0 +1,195 @@
+---
+import { profile } from '../data/site';
+---
+
+<section class="hero">
+  <div class="aura" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+  </div>
+  <div class="wrap hero-inner">
+    <p class="eyebrow reveal">
+      <span class="name">{profile.nameZh}</span>
+      <span class="en">{profile.nameEn}</span>
+    </p>
+    <h1 class="title reveal" style="--d:80ms">
+      {profile.manifesto.map((line, i, all) => <span class:list={{ last: i === all.length - 1 }}>{line}</span>)}
+    </h1>
+    <p class="focus reveal" style="--d:160ms">{profile.focus}</p>
+    <ul class="tags reveal" style="--d:240ms">
+      {profile.tags.map((t) => <li>{t}</li>)}
+    </ul>
+  </div>
+  <a class="scroll-cue" href="#about" aria-label="向下滑动，看看更多">
+    <span class="cue-text">向下滑动，看看更多的我</span>
+    <span class="cue-mouse" aria-hidden="true"><span class="wheel"></span></span>
+    <span class="cue-chev" aria-hidden="true"><i></i><i></i></span>
+  </a>
+</section>
+
+<script>
+  const cue = document.querySelector<HTMLElement>('.scroll-cue');
+  if (cue) {
+    const onScroll = () => cue.classList.toggle('gone', window.scrollY > 60);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: calc(100svh - var(--nav-h));
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 80px 0 180px;
+  }
+  .aura {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    filter: blur(70px);
+    opacity: 0.55;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: multiply;
+    will-change: transform;
+  }
+  .b1 {
+    width: 46vmax; height: 46vmax;
+    right: -12vmax; top: -14vmax;
+    background: radial-gradient(circle at 40% 40%, var(--sky-1), transparent 65%);
+    animation: drift1 22s ease-in-out infinite alternate;
+  }
+  .b2 {
+    width: 38vmax; height: 38vmax;
+    right: 6vmax; top: 18vmax;
+    background: radial-gradient(circle at 50% 50%, var(--grass-1), transparent 65%);
+    animation: drift2 26s ease-in-out infinite alternate;
+  }
+  .b3 {
+    width: 30vmax; height: 30vmax;
+    right: 22vmax; top: 2vmax;
+    background: radial-gradient(circle at 50% 50%, rgba(10, 132, 255, 0.55), transparent 65%);
+    animation: drift3 30s ease-in-out infinite alternate;
+  }
+  @keyframes drift1 { to { transform: translate(-8vmax, 6vmax) scale(1.08); } }
+  @keyframes drift2 { to { transform: translate(-10vmax, -6vmax) scale(0.92); } }
+  @keyframes drift3 { to { transform: translate(6vmax, 8vmax) scale(1.12); } }
+
+  .hero-inner { position: relative; }
+  .eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .name { font-size: 21px; font-weight: 600; }
+  .en { font-size: 13px; letter-spacing: 0.24em; color: var(--ink-2); }
+  .title {
+    font-size: clamp(38px, 6.6vw, 84px);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+  }
+  .title span { display: block; word-break: keep-all; overflow-wrap: anywhere; }
+  .title .last {
+    width: fit-content;
+    background: linear-gradient(100deg, var(--ink) 0%, var(--ink) 18%, var(--sky-2) 52%, var(--grass-2) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .focus {
+    margin-top: 32px;
+    font-size: clamp(18px, 2vw, 22px);
+    color: var(--ink-2);
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 0;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .tags li + li::before { content: '·'; margin: 0 12px; }
+
+  /* 首屏底部的下滑引导：文案 + 渐变描边鼠标 + 依次闪烁的箭头 */
+  .scroll-cue {
+    position: absolute;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink-2);
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+    animation: cue-in 1s var(--ease) 0.9s backwards;
+  }
+  .scroll-cue:hover { color: var(--ink); transform: translate(-50%, 4px); }
+  .scroll-cue.gone { opacity: 0; pointer-events: none; transform: translate(-50%, 12px); }
+  .cue-text {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid var(--line-soft);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .cue-mouse {
+    position: relative;
+    width: 26px;
+    height: 40px;
+    border-radius: 14px;
+    border: 2px solid transparent;
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      var(--grad-lab) border-box;
+  }
+  .wheel {
+    position: absolute;
+    left: 50%;
+    top: 7px;
+    width: 4px;
+    height: 8px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: var(--grad-lab);
+    animation: wheel 1.8s var(--ease) infinite;
+  }
+  .cue-chev { display: flex; flex-direction: column; align-items: center; margin-top: -4px; }
+  .cue-chev i {
+    display: block;
+    width: 10px;
+    height: 10px;
+    margin-top: -3px;
+    border-right: 2px solid var(--sky-2);
+    border-bottom: 2px solid var(--sky-2);
+    transform: rotate(45deg);
+    animation: chev 1.8s ease-in-out infinite;
+  }
+  .cue-chev i:nth-child(2) { border-color: var(--grass-2); animation-delay: 0.2s; }
+
+  @keyframes wheel { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
+  @keyframes chev { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+  @keyframes cue-in { from { opacity: 0; transform: translate(-50%, -10px); } }
+
+  @media (max-width: 734px) {
+    .hero { align-items: flex-end; padding-bottom: 168px; }
+    .aura { opacity: 0.45; }
+    .eyebrow { margin-bottom: 20px; }
+  }
+</style>

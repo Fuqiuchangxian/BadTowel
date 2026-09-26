@@ -1,0 +1,30 @@
+# 每次推送 master，把代码同步一份到 Gitee，供国内的部署平台拉取。
+# 启用方式（在 GitHub 仓库 Settings → Secrets and variables → Actions）：
+#   Variables: GITEE_REPO    = 你的 Gitee 用户名/仓库名，例如 fuqiuchangxian/junhao-lab
+#   Secrets:   GITEE_SSH_KEY = 一把私钥，对应公钥已添加到 Gitee 账号的 SSH 公钥里
+# 没配置 GITEE_REPO 时这个任务会自动跳过。
+name: Mirror to Gitee
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    if: ${{ vars.GITEE_REPO != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to Gitee
+        env:
+          GITEE_SSH_KEY: ${{ secrets.GITEE_SSH_KEY }}
+          GITEE_REPO: ${{ vars.GITEE_REPO }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$GITEE_SSH_KEY" > ~/.ssh/id_gitee
+          chmod 600 ~/.ssh/id_gitee
+          ssh-keyscan gitee.com >> ~/.ssh/known_hosts
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/id_gitee" git push --force "git@gitee.com:${GITEE_REPO}.git" HEAD:master

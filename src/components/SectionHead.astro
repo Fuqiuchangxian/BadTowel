@@ -1,0 +1,32 @@
+---
+interface Props {
+  no: string;
+  en: string;
+  zh: string;
+  lead?: string;
+}
+const { no, en, zh, lead } = Astro.props;
+---
+
+<header class="head reveal">
+  <p class="kicker"><span class="no grad-text">{no}</span><span class="en">{en}</span></p>
+  <h2>{zh}</h2>
+  {lead && <p class="lead">{lead}</p>}
+</header>
+
+<style>
+  .head { margin-bottom: clamp(48px, 7vw, 80px); max-width: 760px; }
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+  }
+  .no { font-weight: 700; }
+  .en { color: var(--ink-3); }
+  h2 { font-size: clamp(34px, 4.8vw, 56px); font-weight: 700; letter-spacing: -0.03em; }
+  .lead { margin-top: 18px; font-size: clamp(18px, 1.8vw, 21px); color: var(--ink-2); line-height: 1.6; }
+</style>

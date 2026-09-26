@@ -1,19 +1,8 @@
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  integrations: [tailwind()],
-  // 如果部署到子路径，修改 base
-  // base: '/badtowel/',
-  vite: {
-    server: {
-      proxy: {
-        '/api/chat': {
-          target: 'https://api.xiaomimimo.com',
-          changeOrigin: true,
-          rewrite: (path) => '/v1/chat/completions',
-        },
-      },
-    },
-  },
+  // 正式域名，用于生成 canonical 与分享链接。可在部署平台用环境变量 SITE_URL 覆盖；留空则不输出 canonical。
+  site: process.env.SITE_URL || undefined,
+  output: 'static',
+  trailingSlash: 'ignore',
 });

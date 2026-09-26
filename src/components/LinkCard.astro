@@ -1,0 +1,95 @@
+---
+import type { Work } from '../data/site';
+
+interface Props {
+  work: Work;
+  index: number;
+}
+const { work, index } = Astro.props;
+const host = new URL(work.href).hostname.replace(/^www\./, '');
+---
+
+<a
+  class:list={['card', 'reveal', { featured: work.featured }]}
+  href={work.href}
+  target="_blank"
+  rel="noopener noreferrer"
+  style={`--d:${(index % 3) * 70}ms`}
+>
+  {work.cover && <img class="cover" src={work.cover} alt="" loading="lazy" />}
+  <div class="top">
+    <span class="kind">{work.kind}</span>
+    <span class="arrow" aria-hidden="true">↗</span>
+  </div>
+  <h3>{work.title}</h3>
+  <p>{work.text}</p>
+  <span class="host mono">{host}</span>
+</a>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 28px;
+    border-radius: var(--radius);
+    background: var(--bg);
+    border: 1px solid var(--line-soft);
+    overflow: hidden;
+    transition: border-color 0.3s var(--ease), transform 0.5s var(--ease);
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: var(--accent-grad);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s var(--ease);
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--line); }
+  .card:hover::after { transform: scaleX(1); }
+  .cover {
+    margin: -28px -28px 8px;
+    width: calc(100% + 56px);
+    max-width: none;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: var(--bg-alt);
+  }
+  .top { display: flex; justify-content: space-between; align-items: center; }
+  .kind { font-size: 12px; font-weight: 500; color: var(--accent); letter-spacing: 0.02em; }
+  .arrow { color: var(--ink-3); transition: transform 0.3s var(--ease), color 0.3s; }
+  .card:hover .arrow { transform: translate(2px, -2px); color: var(--ink); }
+  h3 { font-size: 21px; line-height: 1.3; }
+  p { font-size: 15px; color: var(--ink-2); line-height: 1.65; flex: 1; }
+  .host { color: var(--ink-3); font-size: 11px; }
+
+  .featured {
+    background: var(--black);
+    border-color: var(--black);
+    color: #fff;
+  }
+  .featured::before {
+    content: '';
+    position: absolute;
+    right: -30%;
+    top: -60%;
+    width: 90%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(52, 199, 89, 0.5), rgba(90, 200, 250, 0.2) 45%, transparent 68%);
+    pointer-events: none;
+    transition: transform 0.8s var(--ease);
+  }
+  .featured:hover { border-color: var(--black); }
+  .featured:hover::before { transform: translate(-8%, 8%) scale(1.1); }
+  .featured > * { position: relative; }
+  .featured .kind { color: var(--grass-1); }
+  .featured h3 { margin-top: auto; font-size: clamp(28px, 3.4vw, 40px); letter-spacing: -0.02em; }
+  .featured p { flex: none; color: rgba(255, 255, 255, 0.72); font-size: 17px; max-width: 30em; }
+  .featured .arrow, .featured .host { color: rgba(255, 255, 255, 0.5); }
+  .featured:hover .arrow { color: #fff; }
+</style>
