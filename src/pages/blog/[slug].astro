@@ -1,0 +1,70 @@
+---
+import { render } from 'astro:content';
+import BlogBase from '../../layouts/BlogBase.astro';
+import { formatDate, getPosts } from '../../lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { title, date, lockReason } = post.data;
+const locked = !post.data.public;
+const { Content } = await render(post);
+const excerpt = locked ? lockReason : (post.body ?? '').replace(/\s+/g, ' ').slice(0, 80);
+---
+
+<BlogBase title={title} description={excerpt}>
+  <article>
+    <h1>{title}</h1>
+    <p class="meta">{formatDate(date)}</p>
+    {
+      locked ? (
+        <div class="body locked">
+          <p>这篇暂未公开。</p>
+          {lockReason && <p class="reason">{lockReason}</p>}
+        </div>
+      ) : (
+        <div class="body">
+          <Content />
+        </div>
+      )
+    }
+  </article>
+
+  <nav class="pager">
+    {newer ? <a href={`/blog/${newer.id}/`}><span class="meta">较新</span>{newer.data.title}</a> : <span />}
+    {older && <a class="older" href={`/blog/${older.id}/`}><span class="meta">较早</span>{older.data.title}</a>}
+  </nav>
+</BlogBase>
+
+<style>
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+  }
+  h1 + .meta { margin-top: 8px; }
+  .body { margin-top: 56px; }
+  /* 原文靠换行断句，所以段内换行也要保留 */
+  .body :global(p) { white-space: pre-line; }
+  .body :global(p + p) { margin-top: 1.9em; }
+  .locked { color: #999; }
+  .reason { white-space: pre-line; }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 120px;
+    font-size: 14px;
+  }
+  .pager a { display: flex; flex-direction: column; gap: 2px; max-width: 50%; }
+  .pager .meta { font-size: 12px; }
+  .pager .older { text-align: right; }
+</style>

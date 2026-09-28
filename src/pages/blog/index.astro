@@ -1,0 +1,46 @@
+---
+import BlogBase from '../../layouts/BlogBase.astro';
+import { getPosts } from '../../lib/blog';
+
+const posts = await getPosts();
+// 按年份分组，每组第一行显示年份
+const rows = posts.map((p, i) => ({
+  post: p,
+  year: p.data.date.slice(0, 4),
+  firstOfYear: i === 0 || posts[i - 1].data.date.slice(0, 4) !== p.data.date.slice(0, 4),
+}));
+---
+
+<BlogBase>
+  <ol class="list">
+    {
+      rows.map(({ post, year, firstOfYear }) => (
+        <li class:list={{ gap: firstOfYear }}>
+          <span class="year meta">{firstOfYear ? year : ''}</span>
+          <a href={`/blog/${post.id}/`} class:list={['title', { locked: !post.data.public }]}>
+            {post.data.title}
+          </a>
+          <span class="meta">{post.data.date.slice(5).replace('-', '.')}</span>
+        </li>
+      ))
+    }
+  </ol>
+</BlogBase>
+
+<style>
+  .list { list-style: none; padding: 0; }
+  .list li {
+    display: grid;
+    grid-template-columns: 4.5em 1fr auto;
+    align-items: baseline;
+    column-gap: 16px;
+    padding: 7px 0;
+  }
+  .list li.gap:not(:first-child) { margin-top: 40px; }
+  .title { font-size: 16px; }
+  .locked { color: #999; }
+  .locked::after { content: '未公开'; margin-left: 0.8em; font-size: 12px; }
+  @media (max-width: 600px) {
+    .list li { grid-template-columns: 3.4em 1fr auto; column-gap: 12px; }
+  }
+</style>
