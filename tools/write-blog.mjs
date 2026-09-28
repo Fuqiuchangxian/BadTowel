@@ -1,15 +1,15 @@
-// 本地写博客工具：双击根目录的「写博客.bat」，或运行 npm run write
+// 本地写博客工具（线上 www.badtowel.com/write 的备用版）：双击根目录的「写博客.bat」，或运行 npm run write
 // 只在本机 127.0.0.1 上运行。点「发布」会写入 src/content/blog/xxx.md，然后 git commit + push，Vercel 自动上线。
-// 未公开的文章：网站仓库里只保存标题和理由，正文另存在本地 drafts/（不会上传）。
+// 页面和线上共用 tools/write-blog.html，接口也和 src/pages/api/write.ts 一样，只是本地不用密码。
 import http from 'node:http';
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { exec, execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { cleanPost, nextId, parsePost, serializePost, sortPosts } from '../src/lib/post-file.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const POSTS = path.join(ROOT, 'src/content/blog');
-const DRAFTS = path.join(ROOT, 'drafts');
 const PAGE = fileURLToPath(new URL('write-blog.html', import.meta.url));
 const PORT = 4399;
 const ORIGIN = `http://127.0.0.1:${PORT}`;
@@ -23,70 +23,25 @@ const git = (...args) =>
     }),
   );
 
-const exists = (file) => readFile(file, 'utf8').catch(() => null);
-
-function parse(text) {
-  const m = text.replace(/\r\n/g, '\n').match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-  if (!m) return { body: text };
-  const data = {};
-  for (const line of m[1].split('\n')) {
-    const i = line.indexOf(':');
-    if (i < 0) continue;
-    const v = line.slice(i + 1).trim();
-    data[line.slice(0, i).trim()] = v.startsWith('"') ? JSON.parse(v) : v === 'false' ? false : v === 'true' ? true : v;
-  }
-  return { ...data, body: m[2].replace(/^\n+/, '').trimEnd() };
-}
-
-function serialize(p) {
-  let fm = `title: ${JSON.stringify(p.title)}\ndate: ${JSON.stringify(p.date)}\n`;
-  if (!p.public) fm += `public: false\nlockReason: ${JSON.stringify(p.lockReason)}\n`;
-  return `---\n${fm}---\n\n${p.public ? p.body + '\n' : ''}`;
-}
+const names = async () => (await readdir(POSTS)).filter((f) => f.endsWith('.md'));
 
 async function listPosts() {
-  const files = (await readdir(POSTS)).filter((f) => f.endsWith('.md'));
   const posts = await Promise.all(
-    files.map(async (f) => {
-      const { title, date, public: pub = true } = parse(await readFile(path.join(POSTS, f), 'utf8'));
+    (await names()).map(async (f) => {
+      const { title, date, public: pub } = parsePost(await readFile(path.join(POSTS, f), 'utf8'));
       return { id: f.slice(0, -3), title, date, public: pub };
     }),
   );
-  return posts.sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  return sortPosts(posts);
 }
 
-async function getPost(id) {
-  const post = parse(await readFile(path.join(POSTS, `${id}.md`), 'utf8'));
-  if (post.public === false) post.body = (await exists(path.join(DRAFTS, `${id}.md`))) ?? '';
-  return { id, public: true, lockReason: '', ...post };
-}
+const getPost = async (id) => ({ id, ...parsePost(await readFile(path.join(POSTS, `${id}.md`), 'utf8')) });
 
 async function publish(input) {
-  const p = {
-    title: String(input.title ?? '').trim(),
-    date: String(input.date ?? ''),
-    public: input.public !== false,
-    lockReason: String(input.lockReason ?? '').trim(),
-    body: String(input.body ?? '').replace(/\r\n/g, '\n').trim(),
-  };
-  if (!p.title) throw new Error('标题不能为空');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(p.date)) throw new Error('日期格式应为 2026-09-28');
-  if (!p.body) throw new Error('正文不能为空');
-
-  let id = input.id;
-  const isNew = !id;
-  if (isNew) {
-    const nums = (await readdir(POSTS)).map((f) => parseInt(f, 10)).filter(Number.isFinite);
-    id = String(Math.max(0, ...nums) + 1).padStart(3, '0');
-  } else if (!/^\d+$/.test(id)) {
-    throw new Error('文章编号不对');
-  }
-
-  await writeFile(path.join(POSTS, `${id}.md`), serialize(p));
-  if (!p.public) {
-    await mkdir(DRAFTS, { recursive: true });
-    await writeFile(path.join(DRAFTS, `${id}.md`), p.body + '\n');
-  }
+  const p = cleanPost(input);
+  const isNew = !input.id;
+  const id = isNew ? nextId(await names()) : String(input.id);
+  await writeFile(path.join(POSTS, `${id}.md`), serializePost(p));
 
   const rel = `src/content/blog/${id}.md`;
   const log = [];
@@ -138,12 +93,16 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/') {
       return send(res, 200, await readFile(PAGE, 'utf8'), 'text/html; charset=utf-8');
     }
-    if (req.method === 'GET' && url.pathname === '/api/posts') return send(res, 200, await listPosts());
-    const m = url.pathname.match(/^\/api\/posts\/(\d+)$/);
-    if (req.method === 'GET' && m) return send(res, 200, await getPost(m[1]));
-    if (req.method === 'POST' && url.pathname === '/api/publish') {
-      if (!req.headers['content-type']?.startsWith('application/json')) return send(res, 415, { error: 'json only' });
-      return send(res, 200, await publish(JSON.parse(await readBody(req))));
+    if (url.pathname === '/api/write') {
+      const id = url.searchParams.get('id');
+      if (req.method === 'GET' && id) {
+        return /^\d+$/.test(id) ? send(res, 200, await getPost(id)) : send(res, 404, { error: '找不到这篇文章' });
+      }
+      if (req.method === 'GET') return send(res, 200, await listPosts());
+      if (req.method === 'POST') {
+        if (!req.headers['content-type']?.startsWith('application/json')) return send(res, 415, { error: 'json only' });
+        return send(res, 200, await publish(JSON.parse(await readBody(req))));
+      }
     }
     send(res, 404, { error: 'not found' });
   } catch (e) {

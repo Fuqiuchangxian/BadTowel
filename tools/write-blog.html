@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
     <title>写博客 · 毛巾坏</title>
     <style>
       *, *::before, *::after { box-sizing: border-box; }
@@ -93,14 +94,32 @@
       .old li button { text-align: left; }
       .old li.on button { font-weight: 600; }
       .old .locked { color: #999; }
+
+      #login { display: flex; align-items: baseline; gap: 24px; }
+      #login[hidden], #editor[hidden] { display: none; }
+      #pw { flex: 1; border: 0; border-bottom: 1px solid #eee; outline: 0; padding: 4px 0; }
+      #pw:focus { border-color: #000; }
+      #login-msg { margin-top: 12px; }
+
+      @media (max-width: 600px) {
+        body { padding: 0 20px 96px; }
+        .top { padding: 40px 0 48px; }
+      }
     </style>
   </head>
   <body>
     <header class="top">
       <span>毛巾坏<span class="sep">/</span>写博客</span>
-      <button id="new" type="button" class="meta">+ 新文章</button>
+      <button id="new" type="button" class="meta" hidden>+ 新文章</button>
     </header>
 
+    <form id="login" hidden>
+      <input id="pw" type="password" placeholder="密码" autocomplete="current-password" />
+      <button type="submit">进入</button>
+    </form>
+    <p id="login-msg" class="meta"></p>
+
+    <main id="editor" hidden>
     <p id="mode" class="meta">新文章</p>
     <input id="title" placeholder="标题" autocomplete="off" />
     <div class="row">
@@ -108,7 +127,7 @@
       <label class="meta"><input id="private" type="checkbox" />未公开</label>
       <input id="reason" placeholder="不公开的理由（会显示给读者）" hidden />
     </div>
-    <p id="private-hint" class="meta hint" hidden>未公开的文章：网站上只显示标题和理由；正文只存在你电脑的 drafts 文件夹里，不会上传。</p>
+    <p id="private-hint" class="meta hint" hidden>未公开的文章：博客上只显示标题和理由，正文不会显示。</p>
 
     <textarea id="body" placeholder="正文。换行会原样保留，空一行就是新段落。"></textarea>
 
@@ -122,12 +141,41 @@
       <h2>以前的文章 · 点击修改</h2>
       <ol id="list"></ol>
     </section>
+    </main>
 
     <script>
       const $ = (s) => document.querySelector(s);
       const DRAFT_KEY = 'draft:new';
+      const PW_KEY = 'write:pw';
       let current = null; // 正在编辑的文章编号；null 表示新文章
       let dirty = false;
+
+      // 线上版要带密码，本地版（tools/write-blog.mjs）不校验密码
+      async function api(query = '', body) {
+        const res = await fetch('/api/write' + query, {
+          method: body ? 'POST' : 'GET',
+          headers: {
+            Authorization: 'Bearer ' + (localStorage.getItem(PW_KEY) || ''),
+            ...(body && { 'Content-Type': 'application/json' }),
+          },
+          body: body && JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({ error: `服务器出错（${res.status}）` }));
+        if (res.status === 401) {
+          localStorage.removeItem(PW_KEY);
+          showLogin(data.error);
+        }
+        if (!res.ok) throw new Error(data.error);
+        return data;
+      }
+
+      function showLogin(msg = '') {
+        $('#login').hidden = false;
+        $('#editor').hidden = true;
+        $('#new').hidden = true;
+        $('#login-msg').textContent = msg;
+        $('#pw').focus();
+      }
 
       const today = () => {
         const d = new Date();
@@ -171,7 +219,7 @@
       const leaveOk = () => !dirty || confirm('当前内容还没发布，确定要离开吗？');
 
       async function loadList() {
-        const posts = await (await fetch('/api/posts')).json();
+        const posts = await api();
         $('#list').replaceChildren(
           ...posts.map((p) => {
             const li = document.createElement('li');
@@ -193,7 +241,14 @@
 
       async function openPost(id) {
         if (!leaveOk()) return;
-        const p = await (await fetch(`/api/posts/${id}`)).json();
+        let p;
+        try {
+          p = await api(`?id=${id}`);
+        } catch (e) {
+          $('#status').className = 'err';
+          $('#status').textContent = e.message;
+          return;
+        }
         current = id;
         fill(p);
         dirty = false;
@@ -219,15 +274,9 @@
         btn.disabled = true;
         btn.textContent = '发布中…';
         $('#status').className = '';
-        $('#status').textContent = '正在保存并推送到 GitHub……';
+        $('#status').textContent = '正在保存到 GitHub……';
         try {
-          const res = await fetch('/api/publish', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(p),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error);
+          const data = await api('', p);
           if (!current) localStorage.removeItem(DRAFT_KEY);
           current = data.id;
           dirty = false;
@@ -261,9 +310,30 @@
       });
       addEventListener('resize', sync);
 
+      async function enter() {
+        try {
+          await loadList();
+        } catch (e) {
+          if ($('#editor').hidden) showLogin(e.message);
+          return;
+        }
+        $('#login').hidden = true;
+        $('#login-msg').textContent = '';
+        $('#editor').hidden = false;
+        $('#new').hidden = false;
+        sync();
+        $('#title').focus();
+      }
+
+      $('#login').onsubmit = (e) => {
+        e.preventDefault();
+        localStorage.setItem(PW_KEY, $('#pw').value);
+        $('#login-msg').textContent = '验证中……';
+        enter();
+      };
+
       fill(JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}'));
-      loadList();
-      $('#title').focus();
+      enter();
     </script>
   </body>
 </html>
