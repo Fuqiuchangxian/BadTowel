@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>写博客 · 毛巾坏</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0 auto;
+        max-width: 40rem;
+        padding: 0 24px 120px;
+        background: #fff;
+        color: #000;
+        font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+        font-size: 16px;
+        line-height: 1.9;
+        letter-spacing: 0.02em;
+        -webkit-font-smoothing: antialiased;
+      }
+      button, input, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+      button { background: none; border: 0; padding: 0; cursor: pointer; }
+      button:hover { text-decoration: underline; text-underline-offset: 0.3em; }
+      ::selection { background: #000; color: #fff; }
+      .meta { color: #999; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+      .top { display: flex; justify-content: space-between; align-items: baseline; padding: 72px 0 72px; font-size: 14px; }
+      .top .sep { margin: 0 0.6em; color: #999; }
+
+      #mode { margin-bottom: 12px; }
+      #title {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        padding: 0;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.5;
+        letter-spacing: 0.04em;
+      }
+      #title::placeholder, #body::placeholder, #reason::placeholder { color: #ccc; }
+      .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; margin-top: 8px; }
+      .row input[type='date'] { border: 0; outline: 0; padding: 0; color: #999; font-size: 13px; background: none; }
+      .row label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+      .row input[type='checkbox'] { accent-color: #000; margin: 0; }
+      #reason {
+        flex: 1;
+        min-width: 12em;
+        border: 0;
+        border-bottom: 1px solid #eee;
+        outline: 0;
+        padding: 2px 0;
+        font-size: 13px;
+      }
+      #reason:focus { border-color: #000; }
+      .hint { margin-top: 6px; }
+
+      #body {
+        display: block;
+        width: 100%;
+        min-height: 50vh;
+        margin-top: 48px;
+        border: 0;
+        outline: 0;
+        padding: 0;
+        resize: none;
+        overflow: hidden;
+        line-height: 1.9;
+      }
+
+      .bar {
+        position: sticky;
+        bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 16px;
+        margin-top: 48px;
+        padding: 16px 0 24px;
+        background: #fff;
+        border-top: 1px solid #eee;
+      }
+      #publish { font-weight: 600; }
+      #publish:disabled { color: #999; cursor: default; text-decoration: none; }
+      #status { margin-top: 16px; font-size: 14px; white-space: pre-wrap; word-break: break-all; }
+      #status.err { color: #999; }
+      #status a { color: inherit; }
+
+      .old { margin-top: 120px; }
+      .old h2 { margin: 0 0 16px; font-size: 13px; font-weight: 400; color: #999; }
+      .old ol { list-style: none; margin: 0; padding: 0; }
+      .old li { display: flex; justify-content: space-between; gap: 16px; padding: 4px 0; }
+      .old li button { text-align: left; }
+      .old li.on button { font-weight: 600; }
+      .old .locked { color: #999; }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <span>毛巾坏<span class="sep">/</span>写博客</span>
+      <button id="new" type="button" class="meta">+ 新文章</button>
+    </header>
+
+    <p id="mode" class="meta">新文章</p>
+    <input id="title" placeholder="标题" autocomplete="off" />
+    <div class="row">
+      <input id="date" type="date" />
+      <label class="meta"><input id="private" type="checkbox" />未公开</label>
+      <input id="reason" placeholder="不公开的理由（会显示给读者）" hidden />
+    </div>
+    <p id="private-hint" class="meta hint" hidden>未公开的文章：网站上只显示标题和理由；正文只存在你电脑的 drafts 文件夹里，不会上传。</p>
+
+    <textarea id="body" placeholder="正文。换行会原样保留，空一行就是新段落。"></textarea>
+
+    <div class="bar">
+      <span id="count" class="meta">0 字</span>
+      <button id="publish" type="button">发布</button>
+    </div>
+    <p id="status"></p>
+
+    <section class="old">
+      <h2>以前的文章 · 点击修改</h2>
+      <ol id="list"></ol>
+    </section>
+
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const DRAFT_KEY = 'draft:new';
+      let current = null; // 正在编辑的文章编号；null 表示新文章
+      let dirty = false;
+
+      const today = () => {
+        const d = new Date();
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 10);
+      };
+
+      function read() {
+        return {
+          id: current,
+          title: $('#title').value,
+          date: $('#date').value,
+          public: !$('#private').checked,
+          lockReason: $('#reason').value,
+          body: $('#body').value,
+        };
+      }
+
+      function fill(p) {
+        $('#title').value = p.title || '';
+        $('#date').value = p.date || today();
+        $('#private').checked = p.public === false;
+        $('#reason').value = p.lockReason || '';
+        $('#body').value = p.body || '';
+        $('#status').textContent = '';
+        sync();
+      }
+
+      function sync() {
+        const priv = $('#private').checked;
+        $('#reason').hidden = !priv;
+        $('#private-hint').hidden = !priv;
+        $('#count').textContent = `${$('#body').value.replace(/\s/g, '').length} 字`;
+        $('#mode').textContent = current ? `正在修改 · ${current}` : '新文章';
+        const body = $('#body');
+        body.style.height = 'auto';
+        body.style.height = body.scrollHeight + 'px';
+        document.querySelectorAll('#list li').forEach((li) => li.classList.toggle('on', li.dataset.id === current));
+      }
+
+      const leaveOk = () => !dirty || confirm('当前内容还没发布，确定要离开吗？');
+
+      async function loadList() {
+        const posts = await (await fetch('/api/posts')).json();
+        $('#list').replaceChildren(
+          ...posts.map((p) => {
+            const li = document.createElement('li');
+            li.dataset.id = p.id;
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = p.title + (p.public === false ? '（未公开）' : '');
+            if (p.public === false) b.className = 'locked';
+            b.onclick = () => openPost(p.id);
+            const d = document.createElement('span');
+            d.className = 'meta';
+            d.textContent = p.date.replaceAll('-', '.');
+            li.append(b, d);
+            return li;
+          }),
+        );
+        sync();
+      }
+
+      async function openPost(id) {
+        if (!leaveOk()) return;
+        const p = await (await fetch(`/api/posts/${id}`)).json();
+        current = id;
+        fill(p);
+        dirty = false;
+        scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function newPost() {
+        if (!leaveOk()) return;
+        current = null;
+        fill(JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}'));
+        dirty = false;
+      }
+
+      async function publish() {
+        const p = read();
+        if (!p.title.trim() || !p.body.trim()) {
+          $('#status').className = 'err';
+          $('#status').textContent = '标题和正文都要写哦。';
+          return;
+        }
+        if (!confirm(`发布《${p.title.trim()}》到网站？`)) return;
+        const btn = $('#publish');
+        btn.disabled = true;
+        btn.textContent = '发布中…';
+        $('#status').className = '';
+        $('#status').textContent = '正在保存并推送到 GitHub……';
+        try {
+          const res = await fetch('/api/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(p),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          if (!current) localStorage.removeItem(DRAFT_KEY);
+          current = data.id;
+          dirty = false;
+          const a = document.createElement('a');
+          a.href = data.url;
+          a.target = '_blank';
+          a.textContent = data.url;
+          $('#status').replaceChildren(data.log.join('\n') + '\n', a);
+          await loadList();
+        } catch (e) {
+          $('#status').className = 'err';
+          $('#status').textContent = e.message;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '发布';
+        }
+      }
+
+      for (const el of ['#title', '#date', '#private', '#reason', '#body']) {
+        $(el).addEventListener('input', () => {
+          dirty = true;
+          sync();
+          // 新文章边写边存到浏览器里，关掉页面也不会丢
+          if (!current) localStorage.setItem(DRAFT_KEY, JSON.stringify(read()));
+        });
+      }
+      $('#new').onclick = newPost;
+      $('#publish').onclick = publish;
+      addEventListener('beforeunload', (e) => {
+        if (dirty) e.preventDefault();
+      });
+      addEventListener('resize', sync);
+
+      fill(JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}'));
+      loadList();
+      $('#title').focus();
+    </script>
+  </body>
+</html>

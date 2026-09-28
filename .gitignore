@@ -4,3 +4,5 @@ dist/
 .DS_Store
 .env
 .claude/
+# 未公开博客的正文，只留在本机
+drafts/
