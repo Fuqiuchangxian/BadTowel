@@ -106,18 +106,12 @@ import {
           <span class="muted">{thinking.aside}</span>
         </p>
         <div class="think-cards">
-          <div class="think-card reveal">
-            <span class="chip live"><span class="dot" />Blog · Building</span>
+          <a class="think-card wiki reveal" href={thinking.blog.href}>
+            <span class="chip live"><span class="dot" />Blog · 持续更新</span>
             <h3>博客</h3>
-            <p class="muted">{thinking.blogStatus}</p>
-            {
-              thinking.blogHref && (
-                <a class="link ext" href={thinking.blogHref} target="_blank" rel="noopener noreferrer">
-                  前往博客
-                </a>
-              )
-            }
-          </div>
+            <p class="muted">{thinking.blog.text}</p>
+            <span class="link">前往博客</span>
+          </a>
           <a
             class="think-card wiki reveal"
             style="--d:90ms"

@@ -6,9 +6,11 @@ const author = '毛巾坏';
 interface Props {
   title?: string;
   description?: string;
+  /** 阅读页：右上角显示「返回列表」 */
+  back?: boolean;
 }
 
-const { title, description = `${author}的博客。` } = Astro.props;
+const { title, description = `${author}的博客。`, back = false } = Astro.props;
 const fullTitle = title ? `${title} · ${author}的博客` : `博客 · ${author}`;
 const canonical = Astro.site && new URL(Astro.url.pathname, Astro.site);
 ---
@@ -29,9 +31,8 @@ const canonical = Astro.site && new URL(Astro.url.pathname, Astro.site);
   </head>
   <body>
     <header class="top">
-      <a href="/">{author}</a>
-      <span class="sep">/</span>
-      <a href="/blog/">博客</a>
+      <span>{author}<span class="sep">/</span><a href="/blog/">博客</a></span>
+      {back && <a class="meta" href="/blog/">← 返回列表</a>}
     </header>
     <main>
       <slot />
@@ -64,6 +65,9 @@ const canonical = Astro.site && new URL(Astro.url.pathname, Astro.site);
   h1, h2, p, ol, ul { margin: 0; }
 
   .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
     padding: 72px 0 96px;
     font-size: 14px;
   }

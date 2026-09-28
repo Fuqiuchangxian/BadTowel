@@ -18,7 +18,7 @@ const { Content } = await render(post);
 const excerpt = locked ? lockReason : (post.body ?? '').replace(/\s+/g, ' ').slice(0, 80);
 ---
 
-<BlogBase title={title} description={excerpt}>
+<BlogBase title={title} description={excerpt} back>
   <article>
     <h1>{title}</h1>
     <p class="meta">{formatDate(date)}</p>
@@ -40,6 +40,7 @@ const excerpt = locked ? lockReason : (post.body ?? '').replace(/\s+/g, ' ').sli
     {newer ? <a href={`/blog/${newer.id}/`}><span class="meta">较新</span>{newer.data.title}</a> : <span />}
     {older && <a class="older" href={`/blog/${older.id}/`}><span class="meta">较早</span>{older.data.title}</a>}
   </nav>
+  <a class="back" href="/blog/">← 返回列表</a>
 </BlogBase>
 
 <style>
@@ -67,4 +68,5 @@ const excerpt = locked ? lockReason : (post.body ?? '').replace(/\s+/g, ' ').sli
   .pager a { display: flex; flex-direction: column; gap: 2px; max-width: 50%; }
   .pager .meta { font-size: 12px; }
   .pager .older { text-align: right; }
+  .back { display: inline-block; margin-top: 56px; font-size: 14px; }
 </style>

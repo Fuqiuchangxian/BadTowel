@@ -149,8 +149,10 @@ export const projects = [
 export const thinking = {
   lead: '我对一些事情保持长期的好奇。',
   aside: '（尽管经常三分钟热度，但积攒起来的三分钟也不算少。）',
-  blogStatus: '博客站正在建设中，上线后补充链接',
-  blogHref: '',
+  blog: {
+    text: '工作之外，写一些关于生活、情绪和当下的文字。',
+    href: '/blog/',
+  },
   wiki: {
     text: '由于更希望能够在 AI 时代保留有自己的决策力，我并没有采用完全由 AI 维护的知识库。你可以在这里看到我的一些积累：',
     label: '我的知识库',
