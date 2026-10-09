@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
-import Nav from '../components/Nav.astro';
-import { profile, privacyNote } from '../data/site';
+import Mark from '../components/Mark.astro';
+import { nav, profile, privacyNote } from '../data/site';
 
 interface Props {
   title?: string;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 const { title, description = profile.description } = Astro.props;
-const fullTitle = title ? `${title} · ${profile.lab}` : `${profile.nameZh} ${profile.nameEn} · ${profile.lab}`;
+const fullTitle = title ? `${title} · ${profile.nameZh} Profile` : `${profile.nameZh} ${profile.nameEn} · Profile`;
 const canonical = Astro.site && new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -27,63 +27,39 @@ const canonical = Astro.site && new URL(Astro.url.pathname, Astro.site);
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
-    <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
   <body>
-    <Nav />
+    <header class="top">
+      <span class="brand">
+        <a class="logo" href="/" aria-label="BadTowel 导航"><Mark name="towel" size={18} /></a>
+        <a href="/profile">{profile.lab}</a><span class="sep">/</span><span class="muted">Profile</span>
+      </span>
+      <nav class="nav" aria-label="主导航">
+        {nav.map((n) => <a href={n.href}>{n.label}</a>)}
+      </nav>
+    </header>
     <main>
       <slot />
     </main>
-    <footer class="footer">
-      <div class="wrap">
-        <p class="privacy">{privacyNote}</p>
-        <div class="foot-row">
-          <span class="mono">{profile.lab}</span>
-          <span>© {new Date().getFullYear()} {profile.nameZh} · 古法手搓，AI 协作</span>
-        </div>
-      </div>
+    <footer class="end">
+      <nav class="sites" aria-label="站点">
+        <a href="/">BadTowel</a><a href="/blog/">博客</a><a href="/poetry/">诗歌</a>
+      </nav>
+      <p class="privacy">{privacyNote}</p>
+      <p>© {new Date().getFullYear()} {profile.nameZh} · 古法手搓，AI 协作</p>
     </footer>
-
-    <script>
-      const els = document.querySelectorAll<HTMLElement>('.reveal');
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(
-          (entries) => {
-            for (const e of entries) {
-              if (e.isIntersecting) {
-                e.target.classList.add('in');
-                io.unobserve(e.target);
-              }
-            }
-          },
-          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
-        );
-        els.forEach((el) => io.observe(el));
-      } else {
-        els.forEach((el) => el.classList.add('in'));
-      }
-    </script>
   </body>
 </html>
 
 <style>
-  .footer {
-    padding: 40px 0 48px;
-    border-top: 1px solid var(--line-soft);
-    font-size: 12px;
-    color: var(--ink-3);
-    background: var(--bg-alt);
+  .brand { display: inline-flex; align-items: center; white-space: nowrap; }
+  .logo { margin-right: 0.8em; display: inline-flex; }
+  .nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 1.2em; color: var(--gray); }
+  .nav a:hover { color: var(--ink); }
+  @media (max-width: 600px) {
+    .top { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .nav { justify-content: flex-start; gap: 0 1.4em; }
   }
-  .privacy {
-    padding-bottom: 16px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--line);
-    line-height: 1.6;
-  }
-  .foot-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 8px;
-  }
+  .sites { display: flex; gap: 0 1.4em; margin-bottom: 16px; }
+  .privacy { margin-bottom: 12px; line-height: 1.7; }
 </style>

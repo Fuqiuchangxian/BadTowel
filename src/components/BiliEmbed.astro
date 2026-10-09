@@ -17,20 +17,18 @@ const page = `https://www.bilibili.com/video/${bvid}`;
       scrolling="no"
       referrerpolicy="no-referrer-when-downgrade"></iframe>
   </div>
-  <figcaption>
-    <a class="link ext" href={page} target="_blank" rel="noopener noreferrer">在 B 站打开</a>
+  <figcaption class="meta">
+    <a href={page} target="_blank" rel="noopener noreferrer">在 B 站打开 ↗</a>
   </figcaption>
 </figure>
 
 <style>
-  .bili { margin: 0; }
   .frame {
     position: relative;
     aspect-ratio: 16 / 9;
-    border-radius: var(--radius-sm);
     overflow: hidden;
     background: #111;
   }
   iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  figcaption { margin-top: 10px; font-size: 14px; }
+  figcaption { margin-top: 6px; }
 </style>

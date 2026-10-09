@@ -3,6 +3,12 @@
 //  链接留空字符串 '' 时，对应按钮会显示为「即将更新」。
 // ─────────────────────────────────────────────────────────────
 
+import type { ComponentProps } from 'astro/types';
+import type Mark from '../components/Mark.astro';
+
+/** 黑白小图标的名字，见 src/components/Mark.astro */
+export type Icon = ComponentProps<typeof Mark>['name'];
+
 export const profile = {
   nameZh: '马均昊',
   nameEn: 'MA JUNHAO',
@@ -13,11 +19,11 @@ export const profile = {
   description: '马均昊的个人网站。在 AI 时代，持续构建产品、研究传播，也保留一点古法手搓。',
 };
 
-export const contacts: { label: string; href: string }[] = [
-  { label: 'Email', href: 'mailto:ma.junhao@outlook.com' },
-  { label: 'GitHub', href: 'https://github.com/Fuqiuchangxian/BadTowel' },
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/junhao-ma-b97552369' },
-  { label: 'Resume', href: '/resume.pdf' },
+export const contacts: { label: string; href: string; icon: Icon }[] = [
+  { icon: 'mail', label: 'Email', href: 'mailto:ma.junhao@outlook.com' },
+  { icon: 'code', label: 'GitHub', href: 'https://github.com/Fuqiuchangxian/BadTowel' },
+  { icon: 'user', label: 'LinkedIn', href: 'https://linkedin.com/in/junhao-ma-b97552369' },
+  { icon: 'doc', label: 'Resume', href: '/resume.pdf' },
 ];
 
 export const about = {
@@ -34,6 +40,7 @@ export const about = {
 };
 
 export type Experience = {
+  icon?: Icon;
   company: string;
   role: string;
   period: string;
@@ -46,6 +53,7 @@ export type Experience = {
 
 export const experience: Experience[] = [
   {
+    icon: 'spark',
     company: '蓝色光标',
     role: 'AI 产品实习生（数字员工落地与运营）',
     period: '2026.08 — 2026.09',
@@ -73,6 +81,7 @@ export const experience: Experience[] = [
     caseStudy: { href: '/work/review-agent', label: '阅读案例：脚本审核 Agent' },
   },
   {
+    icon: 'search',
     company: '百度',
     role: '产品经理实习生（广告中台 & 智能体）',
     period: '2026.01 — 2026.06',
@@ -98,6 +107,7 @@ export const experience: Experience[] = [
     ],
   },
   {
+    icon: 'pen',
     company: 'SocialBeta',
     role: '内容运营实习生',
     period: '2025.06 — 2025.12',
@@ -125,16 +135,19 @@ export const experience: Experience[] = [
 export const projects = [
   {
     tag: 'Research · Paper',
+    icon: 'flask',
     title: 'IAMCR 论文（三作）',
     text: '研究受众对情感视觉内容的信息加工机制，探索脑电数据在广告素材效果评估中的应用。负责对脑电数据的分析清洗工作，产出实证结论。',
   },
   {
     tag: 'Award · 省一等奖',
+    icon: 'award',
     title: '正大杯市场调研大赛',
     text: '主导华北地区瑕疵果电商消费行为研究，基于 565 份问卷与 533 条电商评论数据，综合运用 SEM、多分类 Logistic 回归、K-Means 聚类、NLP 文本挖掘及深访等方法，构建消费者购买意愿驱动模型，提出 PRISM 运营策略框架。',
   },
   {
     tag: 'Research',
+    icon: 'globe',
     title: '跨太平洋 AI 议题传播研究',
     text: '参与跨太平洋语境下 AI 议题传播的相关研究。',
   },
@@ -161,6 +174,7 @@ export const thinking = {
 };
 
 export type Work = {
+  icon?: Icon;
   kind: string;
   title: string;
   text: string;
@@ -174,6 +188,7 @@ export const experiments = {
   works: [
     {
       kind: 'AI Coding · 个人产品',
+      icon: 'spark',
       title: '开张 KAIZHANG',
       text: '帮一个零基础的人，从学会到做出、再到被人看到自己的第一个 AI 产品。',
       href: 'https://my.feishu.cn/wiki/W24cw38X8iaatJknmi3ccVc5nqg',
@@ -181,36 +196,42 @@ export const experiments = {
     },
     {
       kind: 'Presentation Design · 手搓',
+      icon: 'slides',
       title: '互联网媒体研究：哔哩哔哩投资报告',
       text: '完全由我个人手搓，配图由 AI 生成。我也把设计思路沉淀为了个人 Skill，在之后的工作中带来了很大的帮助和提效。',
       href: 'https://khsj.cn/28eg26v8p58yxqb',
     },
     {
       kind: 'Research · 答辩',
+      icon: 'chart',
       title: '瑕疵果电商消费行为研究',
       text: '市场调研大赛答辩 PPT，做了相对深入的量化与质化研究。',
       href: 'https://khsj.cn/errdxcvgymbc98a',
     },
     {
       kind: 'Consumer Research',
+      icon: 'chart',
       title: '年轻人现制饮品消费动机与偏好差异研究',
       text: '以喜茶、茉莉奶白、瑞幸为例。',
       href: 'https://my.feishu.cn/wiki/GWYlw6X5DiwFfvk3ePWcaOwYnDe',
     },
     {
       kind: 'Computational Visual Design',
+      icon: 'shapes',
       title: '计算视觉设计作业',
       text: '计算视觉设计方面的相关作业。',
       href: 'https://khsj.cn/r1l8cvkrgb6luos',
     },
     {
       kind: 'Poster',
+      icon: 'image',
       title: '个人首张专辑宣传海报',
       text: '为我的第一张专辑设计的宣传海报。',
       href: 'https://khsj.cn/ux7an14cwwps5b2',
     },
     {
       kind: 'Presentation Design',
+      icon: 'slides',
       title: '品牌传播与广告主 · 开题报告',
       text: '又一 PPT 大作。我很满意这个 PPT 的视觉设计部分。',
       href: 'https://khsj.cn/7c3udx0qbrq3nm8',
@@ -229,48 +250,20 @@ export const manifesto = [
   '拥抱 AI，但别忘了，拥抱自己。',
 ];
 
-// 06 ABOUT ME 做成了一台「小电脑」：每个喜欢的东西是一个 App。
-// 文案 v 是原文；music / bookGenres / work / feed 是各个 App 里互动用的素材。
+// 关于我这个人：喜欢什么、最近在做什么。
 export const me = {
-  intro: '这是一台装着我的小电脑。点点侧栏、Dock 和红绿灯，都能玩。',
   likes: [
-    { id: 'music', k: '听音乐', v: '蔡依林、Lady Gaga、苏打绿、chilichill、洛天依……' },
-    { id: 'books', k: '看书', v: '虽然三分钟热度，但积累起来也不算少。社会学、散文、诗歌等。' },
+    { k: '听音乐', v: '蔡依林、Lady Gaga、苏打绿、chilichill、洛天依……' },
+    { k: '看书', v: '虽然三分钟热度，但积累起来也不算少。社会学、散文、诗歌等。' },
     {
-      id: 'work',
       k: '工作',
       v: '我是一个很需要成就感来证明自己的人，我需要认同、需要反馈。身处自己热爱的行业，我很喜欢当下和之前的工作。',
     },
     {
-      id: 'feed',
       k: '刷资讯',
       v: '我一直认为沉浸于信息流是我的一大缺点。但我发现自己有一个近乎天赋的能力：能从中获取一些思想或方法，从各种资讯中拿到未来可能会有用的片段。（嗯，就和广告推荐一样，predict 一个未来可能会用到的 chunk。）',
     },
   ],
-  music: ['蔡依林', 'Lady Gaga', '苏打绿', 'chilichill', '洛天依'],
-  bookGenres: ['社会学', '散文', '诗歌', '社会学', '散文', '诗歌', '其他'],
-  work: [
-    { from: '脚本审核 Agent', text: '新车系接入完成，审核规则跑通了。' },
-    { from: '素材中台', text: 'AI 智能分析在新场景上线了。' },
-    { from: 'Skill 看板', text: '这周的 Skill 运行结果都能归因了。' },
-    { from: '视频号', text: '新视频收到了很多点赞和评论。' },
-    { from: 'B 站', text: '有人在你的歌下面留了一条很暖的评论。' },
-    { from: '同事', text: '「这个方案想得很清楚。」' },
-  ],
-  feed: [
-    ['AI', '又一个 Agent 框架开源了，主打多 Agent 协作'],
-    ['广告', '品牌开始用 AIGC 批量生产投放素材'],
-    ['营销', '年轻人为什么愿意为情绪价值买单'],
-    ['产品', '一份好的需求文档应该写多长？'],
-    ['AI', 'MCP 生态里又多了一批新工具'],
-    ['传播', '内容平台的推荐逻辑正在悄悄改变'],
-    ['音乐', '有人用 AI 做完了一整张专辑'],
-    ['设计', '做 PPT 的人也开始写 Skill 了'],
-    ['研究', '脑电数据能不能预测一条广告的效果'],
-    ['产品', 'To B 产品怎么做冷启动'],
-    ['营销', '一个品牌联名是怎么从 brief 走到刷屏的'],
-    ['AI', '长上下文不等于好上下文'],
-  ] as [string, string][],
   doing: ['写歌、创作、做视频', '做一些自己的小项目', '学一些莫名其妙但感兴趣的东西'],
 };
 
@@ -278,10 +271,8 @@ export const privacyNote =
   '以上公开链接之外，如果你碰巧得知了我的其他平台账号或未公开的信息，希望不要传播分享它们。';
 
 export const nav = [
-  { href: '/#about', label: 'About' },
-  { href: '/#experience', label: 'Experience' },
-  { href: '/#projects', label: 'Projects' },
-  { href: '/#thinking', label: 'Thinking' },
-  { href: '/#experiments', label: 'Experiments' },
-  { href: '/#me', label: 'Me' },
+  { href: '/profile#experience', label: '经历' },
+  { href: '/profile#projects', label: '项目' },
+  { href: '/profile#works', label: '作品' },
+  { href: '/profile#me', label: '关于' },
 ];

@@ -1,5 +1,5 @@
 // 本地写博客工具（线上 www.badtowel.com/write 的备用版）：双击根目录的「写博客.bat」，或运行 npm run write
-// 只在本机 127.0.0.1 上运行。点「发布」会写入 src/content/blog/xxx.md，然后 git commit + push，Vercel 自动上线。
+// 只在本机 127.0.0.1 上运行（博客打开 /，写诗打开 /poetry）。点「发布」会写入 src/content/<blog|poetry>/xxx.md，然后 git commit + push，Vercel 自动上线。
 // 页面和线上共用 tools/write-blog.html，接口也和 src/pages/api/write.ts 一样，只是本地不用密码。
 import http from 'node:http';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
@@ -9,7 +9,8 @@ import path from 'node:path';
 import { cleanPost, nextId, parsePost, serializePost, sortPosts } from '../src/lib/post-file.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const POSTS = path.join(ROOT, 'src/content/blog');
+const DIRS = { blog: 'src/content/blog', poetry: 'src/content/poetry' };
+const kindOf = (v) => (v === 'poetry' ? 'poetry' : 'blog');
 const PAGE = fileURLToPath(new URL('write-blog.html', import.meta.url));
 const PORT = 4399;
 const ORIGIN = `http://127.0.0.1:${PORT}`;
@@ -23,32 +24,34 @@ const git = (...args) =>
     }),
   );
 
-const names = async () => (await readdir(POSTS)).filter((f) => f.endsWith('.md'));
+const dirOf = (kind) => path.join(ROOT, DIRS[kind]);
+const names = async (kind) => (await readdir(dirOf(kind))).filter((f) => f.endsWith('.md'));
 
-async function listPosts() {
+async function listPosts(kind) {
   const posts = await Promise.all(
-    (await names()).map(async (f) => {
-      const { title, date, public: pub } = parsePost(await readFile(path.join(POSTS, f), 'utf8'));
+    (await names(kind)).map(async (f) => {
+      const { title, date, public: pub } = parsePost(await readFile(path.join(dirOf(kind), f), 'utf8'));
       return { id: f.slice(0, -3), title, date, public: pub };
     }),
   );
   return sortPosts(posts);
 }
 
-const getPost = async (id) => ({ id, ...parsePost(await readFile(path.join(POSTS, `${id}.md`), 'utf8')) });
+const getPost = async (kind, id) => ({ id, ...parsePost(await readFile(path.join(dirOf(kind), `${id}.md`), 'utf8')) });
 
 async function publish(input) {
   const p = cleanPost(input);
+  const kind = kindOf(input.kind);
   const isNew = !input.id;
-  const id = isNew ? nextId(await names()) : String(input.id);
-  await writeFile(path.join(POSTS, `${id}.md`), serializePost(p));
+  const id = isNew ? nextId(await names(kind)) : String(input.id);
+  await writeFile(path.join(dirOf(kind), `${id}.md`), serializePost(p));
 
-  const rel = `src/content/blog/${id}.md`;
+  const rel = `${DIRS[kind]}/${id}.md`;
   const log = [];
   await git('add', '--', rel);
   const changed = await git('diff', '--cached', '--quiet', '--', rel).then(() => false, () => true);
   if (changed) {
-    await git('commit', '-m', `${isNew ? 'Add' : 'Update'} post: ${p.title}`, '--', rel);
+    await git('commit', '-m', `${isNew ? 'Add' : 'Update'} ${kind === 'poetry' ? 'poem' : 'post'}: ${p.title}`, '--', rel);
     log.push('已保存到本地仓库');
   } else {
     log.push('内容没有变化');
@@ -61,7 +64,7 @@ async function publish(input) {
       await git('pull', '--rebase', '--autostash', 'origin', 'master');
       await git('push', 'origin', 'master');
       log.push('已推送到 GitHub，大约 1 分钟后网站更新');
-      return { id, url: `${SITE}/blog/${id}/`, log };
+      return { id, url: `${SITE}/${kind}/${id}/`, log };
     } catch (e) {
       lastErr = e;
     }
@@ -90,15 +93,16 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     const url = new URL(req.url, ORIGIN);
-    if (req.method === 'GET' && url.pathname === '/') {
+    if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/poetry')) {
       return send(res, 200, await readFile(PAGE, 'utf8'), 'text/html; charset=utf-8');
     }
     if (url.pathname === '/api/write') {
       const id = url.searchParams.get('id');
+      const kind = kindOf(url.searchParams.get('c'));
       if (req.method === 'GET' && id) {
-        return /^\d+$/.test(id) ? send(res, 200, await getPost(id)) : send(res, 404, { error: '找不到这篇文章' });
+        return /^\d+$/.test(id) ? send(res, 200, await getPost(kind, id)) : send(res, 404, { error: '找不到这篇文章' });
       }
-      if (req.method === 'GET') return send(res, 200, await listPosts());
+      if (req.method === 'GET') return send(res, 200, await listPosts(kind));
       if (req.method === 'POST') {
         if (!req.headers['content-type']?.startsWith('application/json')) return send(res, 415, { error: 'json only' });
         return send(res, 200, await publish(JSON.parse(await readBody(req))));

@@ -1,0 +1,52 @@
+---
+// 文章列表：按年份分组，每组第一行显示年份。博客和诗歌共用。
+import { sections, type Kind } from '../lib/blog';
+
+interface Props {
+  posts: { id: string; data: { title: string; date: string; public: boolean } }[];
+  kind: Kind;
+}
+const { posts, kind } = Astro.props;
+const base = sections[kind].path;
+const rows = posts.map((p, i) => ({
+  post: p,
+  year: p.data.date.slice(0, 4),
+  firstOfYear: i === 0 || posts[i - 1].data.date.slice(0, 4) !== p.data.date.slice(0, 4),
+}));
+---
+
+{
+  rows.length === 0 ? (
+    <p class="meta">{sections[kind].empty}</p>
+  ) : (
+    <ol class="list">
+      {rows.map(({ post, year, firstOfYear }) => (
+        <li class:list={{ gap: firstOfYear }}>
+          <span class="year meta">{firstOfYear ? year : ''}</span>
+          <a href={`${base}${post.id}/`} class:list={['title', { locked: !post.data.public }]}>
+            {post.data.title}
+          </a>
+          <span class="meta">{post.data.date.slice(5).replace('-', '.')}</span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+<style>
+  .list { list-style: none; padding: 0; }
+  .list li {
+    display: grid;
+    grid-template-columns: 4.5em 1fr auto;
+    align-items: baseline;
+    column-gap: 16px;
+    padding: 7px 0;
+  }
+  .list li.gap:not(:first-child) { margin-top: 40px; }
+  .title { font-size: 16px; }
+  .locked { color: #999; }
+  .locked::after { content: '未公开'; margin-left: 0.8em; font-size: 12px; }
+  @media (max-width: 600px) {
+    .list li { grid-template-columns: 3.4em 1fr auto; column-gap: 12px; }
+  }
+</style>

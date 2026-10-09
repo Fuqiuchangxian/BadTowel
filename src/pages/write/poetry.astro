@@ -1,0 +1,6 @@
+---
+// 线上写诗页（www.badtowel.com/write/poetry），和 /write 共用 tools/write-blog.html，页面按网址决定写哪个栏目
+import page from '../../../tools/write-blog.html?raw';
+---
+
+<Fragment set:html={page} />

@@ -3,9 +3,9 @@ import BlogBase from '../../layouts/BlogBase.astro';
 import PostList from '../../components/PostList.astro';
 import { getPosts } from '../../lib/blog';
 
-const posts = await getPosts('blog');
+const posts = await getPosts('poetry');
 ---
 
-<BlogBase kind="blog">
-  <PostList posts={posts} kind="blog" />
+<BlogBase kind="poetry">
+  <PostList posts={posts} kind="poetry" />
 </BlogBase>

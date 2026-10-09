@@ -34,389 +34,179 @@ const gates = [
 ---
 
 <Base title="脚本审核 Agent" description="如何把一个人工审核流程，拆成可复用、可约束、可持续迭代的 Agent 系统。">
-  <article class="case tone-sky">
-    <header class="hero">
-      <div class="aura" aria-hidden="true"></div>
-      <div class="wrap narrow">
-        <a class="back link" href="/#experience">返回经历</a>
-        <p class="kicker mono reveal">CASE STUDY · 蓝色光标</p>
-        <h1 class="reveal" style="--d:80ms">脚本审核 Agent</h1>
-        <p class="sub reveal" style="--d:160ms">
-          如何把一个人工审核流程，拆成<span class="hl">可复用、可约束、可持续迭代</span>的 Agent 系统。
-        </p>
-        <dl class="facts reveal" style="--d:240ms">
-          {facts.map((f) => <div><dt>{f.k}</dt><dd>{f.v}</dd></div>)}
-        </dl>
-      </div>
-    </header>
+  <article>
+    <p class="meta"><a href="/profile#experience">← 返回经历</a></p>
+    <h1>脚本审核 Agent</h1>
+    <p class="meta">CASE STUDY · 蓝色光标</p>
+    <p class="sub">如何把一个人工审核流程，拆成<strong>可复用、可约束、可持续迭代</strong>的 Agent 系统。</p>
+    <dl class="facts">
+      {facts.map((f) => <div><dt class="meta">{f.k}</dt><dd>{f.v}</dd></div>)}
+    </dl>
 
-    <section class="block">
-      <div class="wrap narrow">
-        <h2 class="reveal"><span class="n mono grad-text">01</span>背景与目标</h2>
-        <div class="prose reveal">
-          <p>
-            蓝标本来以提供服务盈利，现在会做面向内部的 AI 提效，以及基于沉淀下来的能力对客户做 Agent 交付。我负责的是汽车事业群达人投放方向的脚本审核 Agent 落地，服务于内部业务同学。
-          </p>
-          <p>
-            预期是把它扩展成整个汽车事业群通用的审核 Agent——<strong>改变人与人的协作模式，让以后客户可以直接通过这个数字员工对接完成这一部分工作。</strong>
-          </p>
-        </div>
-      </div>
-    </section>
+    <h2><span class="n meta">01</span>背景与目标</h2>
+    <p>
+      蓝标本来以提供服务盈利，现在会做面向内部的 AI 提效，以及基于沉淀下来的能力对客户做 Agent 交付。我负责的是汽车事业群达人投放方向的脚本审核 Agent 落地，服务于内部业务同学。
+    </p>
+    <p>
+      预期是把它扩展成整个汽车事业群通用的审核 Agent——<strong>改变人与人的协作模式，让以后客户可以直接通过这个数字员工对接完成这一部分工作。</strong>
+    </p>
 
-    <section class="block alt">
-      <div class="wrap">
-        <div class="narrow-in">
-          <h2 class="reveal"><span class="n mono grad-text">02</span>两层架构：碰原件的不做判断，做判断的碰不到原件</h2>
-          <p class="prose-lead reveal">
-            一个管「跑文件、读文档、写批注、回读、上传」，另一个只管「看内容、下判断」。两边不直接碰对方的活，靠任务目录里的文件交接。
-          </p>
-        </div>
+    <h2><span class="n meta">02</span>两层架构：碰原件的不做判断，做判断的碰不到原件</h2>
+    <p>
+      一个管「跑文件、读文档、写批注、回读、上传」，另一个只管「看内容、下判断」。两边不直接碰对方的活，靠任务目录里的文件交接。
+    </p>
+    <ol class="arch" aria-label="架构示意：主 Agent 处理原始文件，经任务目录交接给只读的审核子 Agent">
+      <li><span class="meta">INPUT</span><b>客户材料</b><span class="muted">Word / Excel 原稿 · Brief · 声明卡</span></li>
+      <li class="edge meta">↓</li>
+      <li><span class="meta">MAIN AGENT</span><b>文件工程</b><span class="muted">解析文档 · 执行脚本 · 写批注 · 回读 · 上传 · 飞书收发</span></li>
+      <li class="edge meta">⇅ 任务目录 · 抽取文本</li>
+      <li><span class="meta">SUB AGENT</span><b>内容审核</b><span class="muted">只剩 4 个读写工具 · 看内容 · 下判断</span></li>
+    </ol>
+    <h3>为什么拆两份</h3>
+    <p>
+      解析 Word / Excel 要跑脚本，得能执行命令；但审核那个如果拿到客户原始文件，就有泄露和改坏的风险。所以会碰原始文件的不做判断，做判断的碰不到原始文件。
+    </p>
+    <h3>为什么用 OpenClaw</h3>
+    <p>
+      它天然支持多 Agent 编排、能精确把子 Agent 的工具剪到只剩读写、有 Skill 机制能版本化审核逻辑，还自带文件上传拿链接与飞书收发。别的框架这些都得自己搭。
+    </p>
 
-        <div class="arch reveal" role="img" aria-label="架构示意：主 Agent 处理原始文件，经任务目录交接给只读的审核子 Agent">
-          <div class="node">
-            <span class="tag mono">INPUT</span>
-            <h3>客户材料</h3>
-            <p>Word / Excel 原稿<br />Brief · 声明卡</p>
-          </div>
-          <div class="edge"><span></span></div>
-          <div class="node dark">
-            <span class="tag mono">MAIN AGENT</span>
-            <h3>文件工程</h3>
-            <p>解析文档 · 执行脚本<br />写批注 · 回读 · 上传 · 飞书收发</p>
-          </div>
-          <div class="edge bi"><span></span><em class="mono">任务目录<br />抽取文本</em></div>
-          <div class="node glow">
-            <span class="tag mono">SUB AGENT</span>
-            <h3>内容审核</h3>
-            <p>只剩 4 个读写工具<br />看内容 · 下判断</p>
-          </div>
-        </div>
+    <h2><span class="n meta">03</span>流程拆解：能定死的定死，要判断的留给模型</h2>
+    <p>
+      我把人工审核脚本的完整过程拆成了十几步，从「收到材料」到「交付批注版」全连起来。拆的依据是：<strong>哪些步骤能定死、能枚举、能机器验证，就写成规则；哪些需要靠理解上下文做判断，只给检查维度和边界。</strong>
+    </p>
+    <p>最关键的，是把「谁做事、谁只读、中间靠什么交接」分清楚。</p>
+    <ul class="rows">
+      {
+        ruled.map((r) => (
+          <li>
+            <b>{r.t}</b>
+            <span class="muted">{r.d}</span>
+            <span class:list={['meta', 'tag', { open: r.open }]}>{r.open ? '交给模型' : '规则化'}</span>
+          </li>
+        ))
+      }
+    </ul>
 
-        <div class="grid2">
-          <div class="panel reveal">
-            <h3>为什么拆两份</h3>
-            <p>
-              解析 Word / Excel 要跑脚本，得能执行命令；但审核那个如果拿到客户原始文件，就有泄露和改坏的风险。所以会碰原始文件的不做判断，做判断的碰不到原始文件。
-            </p>
-          </div>
-          <div class="panel reveal" style="--d:90ms">
-            <h3>为什么用 OpenClaw</h3>
-            <p>
-              它天然支持多 Agent 编排、能精确把子 Agent 的工具剪到只剩读写、有 Skill 机制能版本化审核逻辑，还自带文件上传拿链接与飞书收发。别的框架这些都得自己搭。
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+    <h2><span class="n meta">04</span>审核逻辑：三步走，再加两条兜底</h2>
+    <ol class="rows">
+      {
+        steps.map((s) => (
+          <li>
+            <span class="meta">{s.no}</span>
+            <div><b>{s.t}</b><p class="muted">{s.d}</p></div>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="meta fb">FALLBACK</p>
+    <ul class="dots">{fallbacks.map((f) => <li>{f}</li>)}</ul>
 
-    <section class="block">
-      <div class="wrap narrow">
-        <h2 class="reveal"><span class="n mono grad-text">03</span>流程拆解：能定死的定死，要判断的留给模型</h2>
-        <div class="prose reveal">
-          <p>
-            我把人工审核脚本的完整过程拆成了十几步，从「收到材料」到「交付批注版」全连起来。拆的依据是：<strong>哪些步骤能定死、能枚举、能机器验证，就写成规则；哪些需要靠理解上下文做判断，只给检查维度和边界。</strong>
-          </p>
-          <p>最关键的，是把「谁做事、谁只读、中间靠什么交接」分清楚。</p>
-        </div>
-        <ul class="ruled">
-          {
-            ruled.map((r, i) => (
-              <li class:list={['reveal', { open: r.open }]} style={`--d:${i * 70}ms`}>
-                <span class="chip">
-                  <span class="dot" />
-                  {r.open ? '交给模型' : '规则化'}
-                </span>
-                <h3>{r.t}</h3>
-                <p>{r.d}</p>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-    </section>
+    <h2><span class="n meta">05</span>工具裁剪与边界</h2>
+    <h3>裁了什么</h3>
+    <p>子 Agent 只剩四个读写工具。执行命令、飞书、网络、后台、记忆、起子 Agent——全禁。</p>
+    <h3>卡了什么</h3>
+    <p>
+      原始脚本、Brief、知识库、声明卡只读不覆盖不删；改知识库必须先出提案等人确认；不碰配置和正式 Skill；不发外部消息，只在本项目目录内活动。
+    </p>
+    <p>
+      <strong>标准接入流程</strong>：先收材料登记，三样齐了主动问一句「开始审核吗」，用户点头才动。
+    </p>
+    <p>
+      <strong>为什么走向 A2A</strong>：能力和权限天然要拆成两个 Agent，用文件做接口能让任何一步失败单独重跑，也保证子 Agent 永远拿不到原件。
+    </p>
 
-    <section class="block alt">
-      <div class="wrap narrow">
-        <h2 class="reveal"><span class="n mono grad-text">04</span>审核逻辑：三步走，再加两条兜底</h2>
-        <ol class="steps">
-          {
-            steps.map((s, i) => (
-              <li class="reveal" style={`--d:${i * 90}ms`}>
-                <span class="s-no mono">{s.no}</span>
-                <div>
-                  <h3>{s.t}</h3>
-                  <p>{s.d}</p>
-                </div>
-              </li>
-            ))
-          }
-        </ol>
-        <div class="fallback reveal">
-          <p class="mono fb-k">FALLBACK</p>
-          <ul>{fallbacks.map((f) => <li>{f}</li>)}</ul>
-        </div>
-      </div>
-    </section>
+    <h2><span class="n meta">06</span>Prompt 与上下文控制</h2>
+    <p>
+      规则不往 prompt 里堆全文，而是放到外部文件；prompt 只留「方法 + 边界」的骨架，用读取路径代替内联。好处是 <strong>prompt 不随规则增多而变大。</strong>
+    </p>
+    <ul class="rows">
+      <li><b>11</b><span class="muted">个规则文件用到才读，不预载</span></li>
+      <li><b>1 : 1</b><span class="muted">每次任务独立目录，历史产物不背进新会话</span></li>
+      <li><b>按需</b><span class="muted">声明卡按车型匹配，只加载命中那张</span></li>
+    </ul>
 
-    <section class="block">
-      <div class="wrap narrow">
-        <h2 class="reveal"><span class="n mono grad-text">05</span>工具裁剪与边界</h2>
-        <div class="grid2 tight">
-          <div class="panel reveal">
-            <h3>裁了什么</h3>
-            <p>子 Agent 只剩四个读写工具。执行命令、飞书、网络、后台、记忆、起子 Agent——全禁。</p>
-          </div>
-          <div class="panel reveal" style="--d:90ms">
-            <h3>卡了什么</h3>
-            <p>
-              原始脚本、Brief、知识库、声明卡只读不覆盖不删；改知识库必须先出提案等人确认；不碰配置和正式 Skill；不发外部消息，只在本项目目录内活动。
-            </p>
-          </div>
-        </div>
-        <div class="prose reveal">
-          <p>
-            <strong>标准接入流程</strong>：先收材料登记，三样齐了主动问一句「开始审核吗」，用户点头才动。
-          </p>
-          <p>
-            <strong>为什么走向 A2A</strong>：能力和权限天然要拆成两个 Agent，用文件做接口能让任何一步失败单独重跑，也保证子 Agent 永远拿不到原件。
-          </p>
-        </div>
-      </div>
-    </section>
+    <h2><span class="n meta">07</span>自进化知识库：靠谱吗？</h2>
+    <p>
+      参考 LLM-Wiki 的思路，把知识库做成给模型读的结构化三层：一份<strong>盘点</strong>（每个文件管什么、硬性还是建议性）、一份<strong>冲突清单</strong>、一份<strong>机器能读的规则索引</strong>。
+    </p>
+    <p>防污染靠三道闸：</p>
+    <ol class="rows">
+      {
+        gates.map((g, i) => (
+          <li>
+            <span class="meta">GATE {i + 1}</span>
+            <div><b>{g.t}</b><p class="muted">{g.d}</p></div>
+          </li>
+        ))
+      }
+    </ol>
 
-    <section class="block alt">
-      <div class="wrap narrow">
-        <h2 class="reveal"><span class="n mono grad-text">06</span>Prompt 与上下文控制</h2>
-        <div class="prose reveal">
-          <p>
-            规则不往 prompt 里堆全文，而是放到外部文件；prompt 只留「方法 + 边界」的骨架，用读取路径代替内联。好处是 <strong>prompt 不随规则增多而变大。</strong>
-          </p>
-        </div>
-        <ul class="trio">
-          <li class="reveal"><p class="big">11</p><p>个规则文件用到才读，不预载</p></li>
-          <li class="reveal" style="--d:80ms"><p class="big">1 : 1</p><p>每次任务独立目录，历史产物不背进新会话</p></li>
-          <li class="reveal" style="--d:160ms"><p class="big">按需</p><p>声明卡按车型匹配，只加载命中那张</p></li>
-        </ul>
-      </div>
-    </section>
+    <h2><span class="n meta">08</span>迭代与问题攻坚</h2>
+    <h3>新增的真规则</h3>
+    <ul class="dots">
+      <li>元信息完整性</li>
+      <li>真实经历核验</li>
+      <li>没有产品文档时的降级口径</li>
+      <li>隐喻歧视专项检测</li>
+    </ul>
+    <h3>修掉的执行偏差</h3>
+    <ul class="dots">
+      <li>辅助驾驶判得过严</li>
+      <li>批注带方括号标签</li>
+      <li>创意建议太啰嗦</li>
+      <li>扩展支持的文件格式</li>
+    </ul>
+    <p>
+      <strong>上下文膨胀的三层解法</strong>：规则外置让 prompt 瘦身；预检机制「用到才读、不预载」；负责人反馈对话太长时，建议开新会话甩掉历史包袱。
+    </p>
 
-    <section class="block">
-      <div class="wrap narrow">
-        <h2 class="reveal"><span class="n mono grad-text">07</span>自进化知识库：靠谱吗？</h2>
-        <div class="prose reveal">
-          <p>
-            参考 LLM-Wiki 的思路，把知识库做成给模型读的结构化三层：一份<strong>盘点</strong>（每个文件管什么、硬性还是建议性）、一份<strong>冲突清单</strong>、一份<strong>机器能读的规则索引</strong>。
-          </p>
-          <p>防污染靠三道闸：</p>
-        </div>
-        <ol class="gates">
-          {
-            gates.map((g, i) => (
-              <li class="reveal" style={`--d:${i * 80}ms`}>
-                <span class="mono">GATE {i + 1}</span>
-                <h3>{g.t}</h3>
-                <p>{g.d}</p>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
-    </section>
-
-    <section class="block alt">
-      <div class="wrap narrow">
-        <h2 class="reveal"><span class="n mono grad-text">08</span>迭代与问题攻坚</h2>
-        <div class="grid2 tight">
-          <div class="panel reveal">
-            <h3>新增的真规则</h3>
-            <ul class="dots">
-              <li>元信息完整性</li>
-              <li>真实经历核验</li>
-              <li>没有产品文档时的降级口径</li>
-              <li>隐喻歧视专项检测</li>
-            </ul>
-          </div>
-          <div class="panel reveal" style="--d:90ms">
-            <h3>修掉的执行偏差</h3>
-            <ul class="dots">
-              <li>辅助驾驶判得过严</li>
-              <li>批注带方括号标签</li>
-              <li>创意建议太啰嗦</li>
-              <li>扩展支持的文件格式</li>
-            </ul>
-          </div>
-        </div>
-        <div class="prose reveal">
-          <p>
-            <strong>上下文膨胀的三层解法</strong>：规则外置让 prompt 瘦身；预检机制「用到才读、不预载」；负责人反馈对话太长时，建议开新会话甩掉历史包袱。
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section class="end">
-      <div class="wrap narrow">
-        <p class="end-q reveal">
-          确定性交给规则，判断交给模型，<br /><span class="grad">边界交给架构。</span>
-        </p>
-        <div class="end-cta reveal">
-          <a class="btn solid" href="/#experience">回到全部经历</a>
-          <a class="btn" href="/#experiments">看看工作之外</a>
-        </div>
-      </div>
-    </section>
+    <p class="quote">确定性交给规则，判断交给模型，<br />边界交给架构。</p>
+    <p class="cta">
+      <a class="u" href="/profile#experience">回到全部经历</a><span class="muted"> · </span><a class="u" href="/profile#works">看看工作之外</a>
+    </p>
   </article>
 </Base>
 
 <style>
-  .narrow { max-width: calc(820px + var(--gutter) * 2); }
-  .narrow-in { max-width: 820px; margin: 0 auto; }
+  h1 { margin-top: 40px; font-size: 24px; line-height: 1.5; letter-spacing: 0.04em; }
+  .sub { margin-top: 24px; font-size: 18px; }
+  .facts { margin-top: 32px; }
+  .facts div { display: grid; grid-template-columns: 4.5em 1fr; column-gap: 16px; padding: 2px 0; }
+  .facts dt { line-height: inherit; }
 
-  .hero {
-    position: relative;
-    overflow: hidden;
-    padding: clamp(56px, 8vw, 96px) 0 clamp(80px, 10vw, 120px);
-  }
-  .aura {
-    position: absolute;
-    right: -20vmax;
-    top: -30vmax;
-    width: 70vmax;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(90, 200, 250, 0.45), rgba(52, 199, 89, 0.18) 45%, transparent 68%);
-    filter: blur(40px);
-    pointer-events: none;
-  }
-  .hero .wrap { position: relative; }
-  .back { font-size: 14px; margin-bottom: 48px; }
-  .back::after { display: none; }
-  .back::before { content: '‹'; font-size: 1.25em; line-height: 1; }
-  .kicker { color: var(--accent); margin-bottom: 16px; letter-spacing: 0.14em; }
-  h1 { font-size: clamp(44px, 7vw, 80px); font-weight: 700; letter-spacing: -0.04em; }
-  .sub { margin-top: 20px; font-size: clamp(20px, 2.4vw, 26px); color: var(--ink-2); line-height: 1.5; letter-spacing: -0.01em; }
-  .hl { color: var(--ink); font-weight: 600; }
-  .facts {
+  h2 { margin: 88px 0 20px; font-size: 18px; line-height: 1.6; }
+  h2 .n { display: block; font-weight: 400; letter-spacing: 0.1em; }
+  h3 { margin: 1.8em 0 0.3em; font-size: 16px; }
+  article > p + p { margin-top: 1em; }
+  strong { font-weight: 600; }
+
+  .arch { list-style: none; margin: 32px 0; padding: 20px 24px; border: 1px solid var(--line); }
+  .arch li:not(.edge) { display: flex; flex-direction: column; }
+  .arch .edge { padding: 6px 0; }
+
+  .rows { list-style: none; padding: 0; margin: 24px 0; }
+  .rows li {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin: 56px 0 0;
-    padding-top: 24px;
+    grid-template-columns: 4.5em 1fr auto;
+    align-items: baseline;
+    column-gap: 16px;
+    padding: 10px 0;
     border-top: 1px solid var(--line);
   }
-  .facts dt { font-size: 12px; color: var(--ink-3); margin-bottom: 4px; }
-  .facts dd { margin: 0; font-size: 14px; line-height: 1.5; }
+  .rows li:last-child { border-bottom: 1px solid var(--line); }
+  .rows li > div { grid-column: span 2; }
+  .tag.open { color: var(--ink); }
 
-  .block { padding: clamp(80px, 10vw, 128px) 0; }
-  .block.alt { background: var(--bg-alt); }
-  h2 {
-    font-size: clamp(26px, 3.4vw, 38px);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.3;
-    margin-bottom: 32px;
-  }
-  h2 .n { display: block; font-size: 13px; letter-spacing: 0.14em; margin-bottom: 12px; }
-  .prose p { font-size: 18px; line-height: 1.8; color: var(--ink-2); }
-  .prose p + p { margin-top: 16px; }
-  .prose strong { color: var(--ink); font-weight: 600; }
-  .prose-lead { font-size: 19px; color: var(--ink-2); line-height: 1.75; }
+  .fb { margin-top: 24px; letter-spacing: 0.1em; }
+  .dots { margin: 0; padding-left: 1.2em; }
 
-  /* Architecture */
-  .arch {
-    display: grid;
-    grid-template-columns: 1fr 64px 1.2fr 96px 1.2fr;
-    align-items: stretch;
-    margin: 56px 0;
-  }
-  .node {
-    padding: 26px 24px;
-    border-radius: var(--radius);
-    background: var(--bg);
-    border: 1px solid var(--line-soft);
-  }
-  .node .tag { font-size: 10.5px; color: var(--ink-3); letter-spacing: 0.12em; }
-  .node h3 { font-size: 21px; margin: 10px 0 8px; }
-  .node p { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
-  .node.dark { background: var(--black); border-color: var(--black); color: #fff; }
-  .node.dark .tag, .node.dark p { color: rgba(255, 255, 255, 0.6); }
-  .node.glow { position: relative; border-color: transparent; background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--grad-lab) border-box; border: 1.5px solid transparent; }
-  .edge { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .edge span { width: 100%; height: 1.5px; background: var(--line); position: relative; }
-  .edge span::after {
-    content: '';
-    position: absolute;
-    right: 2px;
-    top: -4px;
-    width: 8px;
-    height: 8px;
-    border-top: 1.5px solid var(--ink-3);
-    border-right: 1.5px solid var(--ink-3);
-    transform: rotate(45deg);
-  }
-  .edge.bi span { background: var(--grad-lab); }
-  .edge em { font-style: normal; font-size: 10.5px; color: var(--ink-3); text-align: center; margin-top: 10px; line-height: 1.5; }
+  .quote { margin-top: 120px; font-size: 18px; font-weight: 600; line-height: 1.7; }
+  .cta { margin-top: 24px; }
 
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .grid2.tight { margin-bottom: 32px; }
-  .panel { padding: 28px; border-radius: var(--radius); background: var(--bg); border: 1px solid var(--line-soft); }
-  .block:not(.alt) .panel { background: var(--bg-alt); border-color: transparent; }
-  .panel h3 { font-size: 19px; margin-bottom: 10px; }
-  .panel p { font-size: 15px; color: var(--ink-2); line-height: 1.7; }
-
-  .ruled { list-style: none; padding: 0; margin: 40px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .ruled li { padding: 24px; border-radius: var(--radius); background: var(--bg-alt); display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-  .ruled h3 { font-size: 19px; }
-  .ruled p { font-size: 15px; color: var(--ink-2); }
-  .ruled li.open { background: var(--black); color: #fff; }
-  .ruled li.open p { color: rgba(255, 255, 255, 0.65); }
-  .ruled li.open .chip { background: rgba(255, 255, 255, 0.1); border-color: transparent; color: rgba(255, 255, 255, 0.8); }
-
-  .steps { list-style: none; margin: 0; padding: 0; }
-  .steps li { display: grid; grid-template-columns: 56px 1fr; padding: 26px 0; border-top: 1px solid var(--line); }
-  .s-no { font-size: 13px; color: var(--accent); padding-top: 5px; }
-  .steps h3 { font-size: 22px; margin-bottom: 6px; }
-  .steps p { color: var(--ink-2); }
-  .fallback { margin-top: 24px; padding: 28px; border-radius: var(--radius); background: var(--bg); border: 1px solid var(--line-soft); }
-  .fb-k { color: var(--grass-2); margin-bottom: 12px; letter-spacing: 0.14em; }
-  .fallback ul { margin: 0; padding-left: 1.2em; color: var(--ink-2); }
-  .fallback li + li { margin-top: 6px; }
-
-  .trio { list-style: none; padding: 0; margin: 40px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .trio li { padding: 26px 24px; border-radius: var(--radius); background: var(--bg); }
-  .trio .big { font-size: 40px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 8px; background: var(--grad-lab); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .trio p:not(.big) { font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
-
-  .gates { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .gates li { padding: 26px 24px; border-radius: var(--radius); border: 1px solid var(--line); }
-  .gates .mono { color: var(--accent); font-size: 11px; letter-spacing: 0.14em; }
-  .gates h3 { font-size: 20px; margin: 10px 0 8px; }
-  .gates p { font-size: 14.5px; color: var(--ink-2); line-height: 1.65; }
-
-  .dots { margin: 0; padding-left: 1.1em; color: var(--ink-2); font-size: 15px; }
-  .dots li + li { margin-top: 4px; }
-  .dots li::marker { color: var(--accent); }
-
-  .end { background: var(--black); color: #fff; padding: clamp(100px, 14vw, 180px) 0; text-align: center; }
-  .end-q { font-size: clamp(28px, 4.4vw, 50px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.3; }
-  .grad { background: linear-gradient(100deg, var(--sky-1), var(--grass-1)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .end-cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; }
-  .end .btn.solid { background: #fff; color: #000; border-color: #fff; }
-  .end .btn:not(.solid) { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.35); }
-  .end .btn:not(.solid):hover { border-color: #fff; }
-
-  @media (max-width: 1023px) {
-    .arch { grid-template-columns: 1fr; gap: 0; }
-    .edge { height: 48px; }
-    .edge span { width: 1.5px; height: 100%; }
-    .edge span::after { right: -3.5px; top: auto; bottom: 2px; transform: rotate(135deg); }
-    .edge.bi { height: 72px; flex-direction: row; gap: 14px; }
-    .edge em { margin-top: 0; text-align: left; }
-    .facts { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 734px) {
-    .grid2, .ruled, .trio, .gates { grid-template-columns: 1fr; }
-    .prose p { font-size: 17px; }
+  @media (max-width: 600px) {
+    .rows li { grid-template-columns: 1fr auto; }
+    .rows li > :nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+    .rows li > div { grid-column: 1 / -1; }
   }
 </style>

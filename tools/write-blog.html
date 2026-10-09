@@ -109,7 +109,7 @@
   </head>
   <body>
     <header class="top">
-      <span>毛巾坏<span class="sep">/</span>写博客</span>
+      <span>毛巾坏<span class="sep">/</span><span id="where">写博客</span></span>
       <button id="new" type="button" class="meta" hidden>+ 新文章</button>
     </header>
 
@@ -127,7 +127,7 @@
       <label class="meta"><input id="private" type="checkbox" />未公开</label>
       <input id="reason" placeholder="不公开的理由（会显示给读者）" hidden />
     </div>
-    <p id="private-hint" class="meta hint" hidden>未公开的文章：博客上只显示标题和理由，正文不会显示。</p>
+    <p id="private-hint" class="meta hint" hidden>未公开的文章：网站上只显示标题和理由，正文不会显示。</p>
 
     <textarea id="body" placeholder="正文。换行会原样保留，空一行就是新段落。"></textarea>
 
@@ -138,27 +138,37 @@
     <p id="status"></p>
 
     <section class="old">
-      <h2>以前的文章 · 点击修改</h2>
+      <h2 id="old-h">以前的文章 · 点击修改</h2>
       <ol id="list"></ol>
     </section>
     </main>
 
     <script>
       const $ = (s) => document.querySelector(s);
-      const DRAFT_KEY = 'draft:new';
+      // 同一个页面写两个栏目：/write 是博客，/write/poetry 是诗歌（本地工具里是 / 和 /poetry）
+      const KIND = location.pathname.includes('poetry') ? 'poetry' : 'blog';
+      const DRAFT_KEY = KIND === 'poetry' ? 'draft:poetry:new' : 'draft:new';
+      if (KIND === 'poetry') {
+        document.title = '写诗 · 毛巾坏';
+        $('#where').textContent = '写诗';
+        $('#new').textContent = '+ 新诗';
+        $('#old-h').textContent = '以前的诗 · 点击修改';
+        $('#body').placeholder = '正文。换行会原样保留，空一行就是新的一节。';
+      }
+      const NOUN = KIND === 'poetry' ? '诗' : '文章';
       const PW_KEY = 'write:pw';
       let current = null; // 正在编辑的文章编号；null 表示新文章
       let dirty = false;
 
       // 线上版要带密码，本地版（tools/write-blog.mjs）不校验密码
       async function api(query = '', body) {
-        const res = await fetch('/api/write' + query, {
+        const res = await fetch(`/api/write?c=${KIND}` + query.replace('?', '&'), {
           method: body ? 'POST' : 'GET',
           headers: {
             Authorization: 'Bearer ' + (localStorage.getItem(PW_KEY) || ''),
             ...(body && { 'Content-Type': 'application/json' }),
           },
-          body: body && JSON.stringify(body),
+          body: body && JSON.stringify({ ...body, kind: KIND }),
         });
         const data = await res.json().catch(() => ({ error: `服务器出错（${res.status}）` }));
         if (res.status === 401) {
@@ -209,7 +219,7 @@
         $('#reason').hidden = !priv;
         $('#private-hint').hidden = !priv;
         $('#count').textContent = `${$('#body').value.replace(/\s/g, '').length} 字`;
-        $('#mode').textContent = current ? `正在修改 · ${current}` : '新文章';
+        $('#mode').textContent = current ? `正在修改 · ${current}` : `新${NOUN}`;
         const body = $('#body');
         body.style.height = 'auto';
         body.style.height = body.scrollHeight + 'px';

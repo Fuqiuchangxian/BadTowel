@@ -1,0 +1,180 @@
+---
+import Base from '../layouts/Base.astro';
+import Fold from '../components/Fold.astro';
+import BiliEmbed from '../components/BiliEmbed.astro';
+import Mark from '../components/Mark.astro';
+import { profile, about, contacts, experience, projects, thinking, experiments, manifesto, me } from '../data/site';
+
+const isExternal = (href: string) => /^http|\.pdf$/.test(href);
+const ext = (href: string) => (isExternal(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {});
+const host = (href: string) => new URL(href).hostname.replace(/^www\./, '');
+---
+
+<Base>
+  <!-- 我是谁 -->
+  <section class="intro" id="about">
+    <h1>{profile.nameZh}<span class="meta en">{profile.nameEn}</span></h1>
+    <p class="lead">{profile.manifesto.join('')}</p>
+    <p>{about.greeting}{about.body.join('')}</p>
+    <p class="muted">{profile.focus}</p>
+    {about.pillars.map((p) => <p class="pillar"><b>{p.k}</b>　<span class="muted">{p.v}</span></p>)}
+    <p class="contacts">
+      <span class="muted">你可以在这些地方联系到我</span>
+      {
+        contacts.map((c) =>
+          c.href ? (
+            <a href={c.href} {...ext(c.href)}><Mark name={c.icon} />{c.label}</a>
+          ) : (
+            <span class="muted"><Mark name={c.icon} />{c.label}（即将更新）</span>
+          ),
+        )
+      }
+    </p>
+  </section>
+
+  <!-- 经历 -->
+  <section id="experience">
+    <h2 class="label">经历</h2>
+    {
+      experience.map((e) => (
+        <Fold icon={e.icon} title={e.company} sub={e.role} meta={e.period}>
+          {e.companyIntro && <p class="muted">{e.companyIntro}</p>}
+          <p>{e.summary}</p>
+          {e.bullets.length > 0 && (
+            <ul class="bullets">
+              {e.bullets.map((b) => (
+                <li>
+                  <h3>{b.title}</h3>
+                  <p class="muted">{b.text}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+          {e.note && <p class="note muted">{e.note}</p>}
+          {e.caseStudy && (
+            <p class="more">
+              <a class="u" href={e.caseStudy.href}>{e.caseStudy.label} →</a>
+            </p>
+          )}
+        </Fold>
+      ))
+    }
+  </section>
+
+  <!-- 项目 -->
+  <section id="projects">
+    <h2 class="label">项目</h2>
+    {
+      projects.map((p) =>
+        p.muted ? (
+          <p class="row muted">
+            <Mark name="dots" />
+            <span>{p.title}<span class="faint">/</span>{p.text}</span>
+          </p>
+        ) : (
+          <Fold icon={p.icon} title={p.title} sub={p.tag}>
+            <p class="muted">{p.text}</p>
+          </Fold>
+        ),
+      )
+    }
+  </section>
+
+  <!-- 思考 -->
+  <section id="thinking">
+    <h2 class="label">思考</h2>
+    <p>
+      {thinking.lead}<span class="muted">{thinking.aside}</span>
+    </p>
+    <p>
+      {thinking.blog.text}<a class="u" href={thinking.blog.href}>去博客看看 →</a>
+    </p>
+    <p>
+      {thinking.wiki.text}<a class="u" href={thinking.wiki.href} target="_blank" rel="noopener noreferrer">{thinking.wiki.label} ↗</a>
+    </p>
+  </section>
+
+  <!-- 作品 -->
+  <section id="works">
+    <h2 class="label">作品</h2>
+    <p class="muted section-intro">{experiments.intro}</p>
+    {
+      experiments.works.map((w) => (
+        <Fold icon={w.icon} title={w.title} sub={w.kind} meta={w.featured ? '精选' : undefined}>
+          {w.cover && <img class="cover" src={w.cover} alt="" loading="lazy" />}
+          <p class="muted">{w.text}</p>
+          <p class="more">
+            <a class="u" href={w.href} target="_blank" rel="noopener noreferrer">在 {host(w.href)} 打开 ↗</a>
+          </p>
+        </Fold>
+      ))
+    }
+
+    <h2 class="label sub-label">{experiments.music.title}</h2>
+    <p class="muted section-intro">{experiments.music.text}</p>
+    <Fold icon="music" title={`${experiments.music.videos.length} 首原创`} sub="点开就能听" meta="Bilibili">
+      <div class="videos">
+        {experiments.music.videos.map((v) => <BiliEmbed bvid={v} />)}
+      </div>
+    </Fold>
+  </section>
+
+  <!-- 关于我 -->
+  <section id="me">
+    <h2 class="label">关于我这个人</h2>
+    <p>我喜欢的东西不多，但每一样都挺认真：</p>
+    {me.likes.map((l) => <p class="like"><b>{l.k}</b>　<span class="muted">{l.v}</span></p>)}
+    <p>最近在{me.doing.join('，')}。<span class="muted">（持续更新中）</span></p>
+  </section>
+
+  <!-- 宣言 -->
+  <section class="manifesto" aria-label="宣言">
+    {manifesto.map((line) => <p>{line}</p>)}
+  </section>
+</Base>
+
+<style>
+  section + section { margin-top: 88px; }
+  section > p + p { margin-top: 1em; }
+
+  .intro h1 { font-size: 24px; line-height: 1.5; letter-spacing: 0.04em; }
+  .intro .en { margin-left: 0.8em; font-weight: 400; letter-spacing: 0.16em; }
+  .intro .lead { margin: 24px 0 1em; font-size: 18px; font-weight: 600; }
+  .intro .pillar { margin-top: 0.5em; }
+  .intro .muted + .pillar { margin-top: 1.6em; }
+  .intro .contacts { margin-top: 1.6em; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 1.4em; }
+  .contacts a, .contacts span:not(:first-child) { display: inline-flex; align-items: baseline; gap: 0.4em; }
+  .contacts a { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 0.3em; text-decoration-thickness: 1px; }
+  .contacts a:hover { text-decoration-color: var(--ink); }
+  .contacts :global(.mark) { align-self: center; }
+  .pillar b, .like b { font-weight: 600; }
+  .like { margin-top: 0.7em; }
+
+  .label {
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray);
+    letter-spacing: 0.1em;
+  }
+  .sub-label { margin-top: 56px; }
+  .section-intro { margin-bottom: 12px; }
+
+  .row { padding: 7px 0; display: flex; align-items: baseline; gap: 0.6em; }
+  .row :global(.mark) { align-self: center; }
+  .faint { margin: 0 4px; color: var(--faint); }
+
+  .bullets { list-style: none; padding: 0; margin: 1.4em 0 0; }
+  .bullets li + li { margin-top: 1.2em; }
+  .bullets h3 { font-size: 15px; }
+  .bullets p { font-size: 14px; line-height: 1.8; }
+  .note { margin-top: 1.4em; font-size: 14px; line-height: 1.8; }
+  .more { margin-top: 1.2em; }
+  .cover { margin-bottom: 16px; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--line); }
+
+  .videos { display: grid; gap: 24px; }
+
+  .manifesto p { font-size: 18px; font-weight: 600; line-height: 1.7; color: var(--gray); }
+  .manifesto p:first-child { color: var(--ink); }
+
+</style>

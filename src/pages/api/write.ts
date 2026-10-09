@@ -10,7 +10,8 @@ export const prerender = false;
 
 const REPO = 'Fuqiuchangxian/BadTowel';
 const BRANCH = 'master';
-const DIR = 'src/content/blog';
+const DIRS = { blog: 'src/content/blog', poetry: 'src/content/poetry' } as const;
+const kindOf = (v: unknown) => (v === 'poetry' ? 'poetry' : 'blog');
 const SITE = 'https://www.badtowel.com';
 
 const json = (body: unknown, status = 200) =>
@@ -51,7 +52,7 @@ async function github(path: string, init: RequestInit = {}) {
 }
 
 /** 一次请求拿到目录里所有文章的全文 */
-async function readAll(): Promise<{ name: string; oid: string; text: string }[]> {
+async function readAll(kind: keyof typeof DIRS): Promise<{ name: string; oid: string; text: string }[]> {
   const [owner, name] = REPO.split('/');
   const { data } = await github('/graphql', {
     method: 'POST',
@@ -61,10 +62,11 @@ async function readAll(): Promise<{ name: string; oid: string; text: string }[]>
           object(expression: $expr) { ... on Tree { entries { name object { ... on Blob { oid text } } } } }
         }
       }`,
-      variables: { owner, name, expr: `${BRANCH}:${DIR}` },
+      variables: { owner, name, expr: `${BRANCH}:${DIRS[kind]}` },
     }),
   });
-  return data.repository.object.entries
+  // 目录里还没有任何文章时（比如刚建的诗歌栏目），仓库里没有这个目录
+  return (data.repository.object?.entries ?? [])
     .filter((e: any) => e.name.endsWith('.md'))
     .map((e: any) => ({ name: e.name, oid: e.object.oid, text: e.object.text ?? '' }));
 }
@@ -73,7 +75,7 @@ export const GET: APIRoute = async ({ request, url }) => {
   const denied = await guard(request);
   if (denied) return denied;
   try {
-    const files = await readAll();
+    const files = await readAll(kindOf(url.searchParams.get('c')));
     const id = url.searchParams.get('id');
     if (id) {
       const file = files.find((f) => f.name === `${id}.md`);
@@ -95,20 +97,21 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const input = await request.json();
     const post = cleanPost(input);
-    const files = await readAll();
+    const kind = kindOf(input.kind);
+    const files = await readAll(kind);
     const isNew = !input.id;
     const id = isNew ? nextId(files.map((f) => f.name)) : String(input.id);
     const existing = files.find((f) => f.name === `${id}.md`);
     const content = serializePost(post);
-    const url = `${SITE}/blog/${id}/`;
+    const url = `${SITE}/${kind}/${id}/`;
 
     if (existing && existing.text.replace(/\r\n/g, '\n') === content) {
       return json({ id, url, log: ['内容没有变化'] });
     }
-    await github(`/repos/${REPO}/contents/${DIR}/${id}.md`, {
+    await github(`/repos/${REPO}/contents/${DIRS[kind]}/${id}.md`, {
       method: 'PUT',
       body: JSON.stringify({
-        message: `${existing ? 'Update' : 'Add'} post: ${post.title}`,
+        message: `${existing ? 'Update' : 'Add'} ${kind === 'poetry' ? 'poem' : 'post'}: ${post.title}`,
         content: Buffer.from(content, 'utf8').toString('base64'),
         branch: BRANCH,
         ...(existing && { sha: existing.oid }),

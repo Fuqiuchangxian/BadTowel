@@ -3,7 +3,7 @@ import PostPage from '../../components/PostPage.astro';
 import { getPosts } from '../../lib/blog';
 
 export async function getStaticPaths() {
-  const posts = await getPosts('blog');
+  const posts = await getPosts('poetry');
   return posts.map((post, i) => ({
     params: { slug: post.id },
     props: { post, newer: posts[i - 1], older: posts[i + 1] },
@@ -13,4 +13,4 @@ export async function getStaticPaths() {
 const { post, newer, older } = Astro.props;
 ---
 
-<PostPage kind="blog" post={post} newer={newer} older={older} />
+<PostPage kind="poetry" post={post} newer={newer} older={older} />
