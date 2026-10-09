@@ -17,7 +17,6 @@ const host = (href: string) => new URL(href).hostname.replace(/^www\./, '');
     <p class="lead">{profile.manifesto.join('')}</p>
     <p>{about.greeting}{about.body.join('')}</p>
     <p class="muted">{profile.focus}</p>
-    {about.pillars.map((p) => <p class="pillar"><b>{p.k}</b>　<span class="muted">{p.v}</span></p>)}
     <p class="contacts">
       <span class="muted">你可以在这些地方联系到我</span>
       {
@@ -140,14 +139,12 @@ const host = (href: string) => new URL(href).hostname.replace(/^www\./, '');
   .intro h1 { font-size: 24px; line-height: 1.5; letter-spacing: 0.04em; }
   .intro .en { margin-left: 0.8em; font-weight: 400; letter-spacing: 0.16em; }
   .intro .lead { margin: 24px 0 1em; font-size: 18px; font-weight: 600; }
-  .intro .pillar { margin-top: 0.5em; }
-  .intro .muted + .pillar { margin-top: 1.6em; }
   .intro .contacts { margin-top: 1.6em; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 1.4em; }
   .contacts a, .contacts span:not(:first-child) { display: inline-flex; align-items: baseline; gap: 0.4em; }
   .contacts a { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 0.3em; text-decoration-thickness: 1px; }
   .contacts a:hover { text-decoration-color: var(--ink); }
   .contacts :global(.mark) { align-self: center; }
-  .pillar b, .like b { font-weight: 600; }
+  .like b { font-weight: 600; }
   .like { margin-top: 0.7em; }
 
   .label {
